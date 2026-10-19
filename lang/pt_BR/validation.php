@@ -1,0 +1,49 @@
+<?php
+
+// Mensagens de validação em português (apenas as regras usadas no sistema).
+return [
+    'array' => 'O campo :attribute deve ser uma lista.',
+    'before' => 'O campo :attribute deve ser uma data anterior a :date.',
+    'confirmed' => 'A confirmação de :attribute não confere.',
+    'current_password' => 'A senha está incorreta.',
+    'date' => 'O campo :attribute não é uma data válida.',
+    'email' => 'O campo :attribute deve ser um e-mail válido.',
+    'exists' => 'O valor selecionado em :attribute é inválido.',
+    'integer' => 'O campo :attribute deve ser um número inteiro.',
+    'lowercase' => 'O campo :attribute deve estar em letras minúsculas.',
+    'max' => [
+        'numeric' => 'O campo :attribute não pode ser maior que :max.',
+        'string' => 'O campo :attribute não pode ter mais de :max caracteres.',
+    ],
+    'min' => [
+        'numeric' => 'O campo :attribute deve ser no mínimo :min.',
+        'string' => 'O campo :attribute deve ter no mínimo :min caracteres.',
+    ],
+    'numeric' => 'O campo :attribute deve ser um número.',
+    'password' => [
+        'letters' => 'A :attribute deve ter pelo menos uma letra.',
+        'mixed' => 'A :attribute deve ter letras maiúsculas e minúsculas.',
+        'numbers' => 'A :attribute deve ter pelo menos um número.',
+        'symbols' => 'A :attribute deve ter pelo menos um símbolo.',
+        'uncompromised' => 'Esta :attribute apareceu em um vazamento de dados. Escolha outra.',
+    ],
+    'required' => 'O campo :attribute é obrigatório.',
+    'string' => 'O campo :attribute deve ser um texto.',
+    'unique' => 'Este :attribute já está em uso.',
+
+    'attributes' => [
+        'name' => 'nome',
+        'email' => 'e-mail',
+        'password' => 'senha',
+        'salon_name' => 'nome do salão',
+        'phone' => 'telefone',
+        'commission_percent' => 'comissão',
+        'category' => 'categoria',
+        'duration_minutes' => 'duração',
+        'price' => 'preço',
+        'whatsapp' => 'WhatsApp',
+        'birthday' => 'data de nascimento',
+        'notes' => 'observações',
+        'busca' => 'busca',
+    ],
+];
