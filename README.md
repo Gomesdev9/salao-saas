@@ -4,16 +4,17 @@ Sistema web para salões de beleza: agenda, clientes, profissionais, serviços, 
 
 Feito com **Laravel 13**, **Blade**, **Tailwind CSS** e **SQLite** no desenvolvimento (MySQL em produção).
 
-## O que já funciona (Fase 1, parte 1)
+## O que já funciona (Fase 1)
 
 - Cadastro de salão + login (cada conta nova cria um salão)
+- **Agenda do dia** com uma coluna por profissional: clique num horário vazio para agendar, cores por situação (agendado, confirmado, atendido, faltou, cancelado) e bloqueio de horário duplicado
 - Profissionais: telefone, % de comissão, serviços que cada um faz, ativo/inativo
 - Serviços: categoria, duração, preço, ativo/inativo
 - Clientes: WhatsApp, aniversário, observações, busca por nome ou telefone
 - Isolamento entre salões (um salão nunca vê dados de outro)
 - Tudo em português
 
-Próximo passo: a **agenda** (Fase 1, parte 2).
+Próximo passo: **agendamento online** pelo cliente (Fase 2).
 
 ## Como rodar no Windows
 
@@ -76,9 +77,10 @@ php artisan test
 
 | Pasta / arquivo | O que tem |
 | --- | --- |
-| `routes/web.php` | As URLs do sistema (`/profissionais`, `/servicos`, `/clientes`) |
+| `routes/web.php` | As URLs do sistema (`/agenda`, `/profissionais`, `/servicos`, `/clientes`) |
 | `app/Http/Controllers` | A lógica de cada tela (listar, salvar, editar, remover) |
-| `app/Models` | As tabelas como classes PHP (`Salon`, `Professional`, `Service`, `Client`) |
+| `app/Models` | As tabelas como classes PHP (`Salon`, `Professional`, `Service`, `Client`, `Appointment`) |
+| `app/Enums/AppointmentStatus.php` | As situações de um agendamento, com nome e cor |
 | `app/Models/Concerns/BelongsToSalon.php` | O filtro automático que separa os dados de cada salão |
 | `database/migrations` | A estrutura das tabelas do banco |
 | `database/seeders/DatabaseSeeder.php` | Os dados de demonstração |
