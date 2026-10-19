@@ -6,7 +6,11 @@
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-4 sm:grid-cols-3">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <a href="{{ route('appointments.index') }}" class="block bg-white shadow-sm sm:rounded-lg p-6 hover:bg-gray-50">
+                <div class="text-3xl font-semibold text-gray-900">{{ $todayCount }}</div>
+                <div class="mt-1 text-gray-600">Atendimentos hoje</div>
+            </a>
             <a href="{{ route('professionals.index') }}" class="block bg-white shadow-sm sm:rounded-lg p-6 hover:bg-gray-50">
                 <div class="text-3xl font-semibold text-gray-900">{{ $professionalsCount }}</div>
                 <div class="mt-1 text-gray-600">Profissionais ativos</div>
