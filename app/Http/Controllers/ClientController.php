@@ -22,7 +22,11 @@ class ClientController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('clients.index', compact('clients', 'search'));
+        return view('clients.index', [
+            'clients' => $clients,
+            'search' => $search,
+            'total' => Client::count(),
+        ]);
     }
 
     public function create(): View

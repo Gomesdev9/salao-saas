@@ -1,3 +1,43 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-creme text-tinta;
+    }
+
+    h1,
+    h2 {
+        @apply font-display;
+    }
+}
+
+@layer components {
+    /* Card padrão: fundo claro, borda fina, cantos arredondados e sombra */
+    .cartao {
+        @apply rounded-cartao border border-linha bg-cartao shadow-cartao;
+    }
+
+    /* Campos de formulário */
+    .campo {
+        @apply block h-11 w-full rounded-campo border-linha-forte bg-cartao px-3 text-[15px] text-tinta shadow-none focus:border-caramelo focus:ring-caramelo placeholder:text-suave/60;
+    }
+
+    textarea.campo {
+        @apply h-auto py-2.5;
+    }
+
+    /* Selo arredondado (situação, categoria etc.) */
+    .selo {
+        @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold;
+    }
+
+    .avatar {
+        @apply flex shrink-0 items-center justify-center rounded-full bg-pele font-bold text-cafe-escuro;
+    }
+}
+
+[x-cloak] {
+    display: none !important;
+}

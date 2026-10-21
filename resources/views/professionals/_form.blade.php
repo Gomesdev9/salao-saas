@@ -1,35 +1,35 @@
-<div class="p-6 space-y-4">
+<div class="flex flex-col gap-[18px] p-6">
     <div>
         <x-input-label for="name" value="Nome" />
-        <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $professional->name)" required autofocus />
-        <x-input-error :messages="$errors->get('name')" class="mt-2" />
+        <x-text-input id="name" name="name" type="text" :value="old('name', $professional->name)" required autofocus />
+        <x-input-error :messages="$errors->get('name')" />
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2">
         <div>
             <x-input-label for="phone" value="Telefone / WhatsApp" />
-            <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone', $professional->phone)" placeholder="(00) 90000-0000" />
-            <x-input-error :messages="$errors->get('phone')" class="mt-2" />
+            <x-text-input id="phone" name="phone" type="tel" :value="old('phone', $professional->phone)" placeholder="(00) 90000-0000" />
+            <x-input-error :messages="$errors->get('phone')" />
         </div>
         <div>
             <x-input-label for="commission_percent" value="Comissão (%)" />
-            <x-text-input id="commission_percent" name="commission_percent" type="number" min="0" max="100" step="0.01" class="mt-1 block w-full" :value="old('commission_percent', $professional->commission_percent)" required />
-            <x-input-error :messages="$errors->get('commission_percent')" class="mt-2" />
+            <x-text-input id="commission_percent" name="commission_percent" type="number" min="0" max="100" step="0.01" :value="old('commission_percent', $professional->commission_percent)" required />
+            <x-input-error :messages="$errors->get('commission_percent')" />
         </div>
     </div>
 
-    <div>
-        <x-input-label value="Serviços que faz" />
+    <fieldset>
+        <legend class="mb-1 text-sm font-semibold">Serviços que faz</legend>
         @php($selected = old('services', $professional->services->pluck('id')->all()))
-        @forelse ($services as $service)
-            <div class="mt-2">
+        <div class="grid gap-x-4 sm:grid-cols-2">
+            @forelse ($services as $service)
                 <x-checkbox-input name="services[]" :value="$service->id" :label="$service->name" :checked="in_array($service->id, $selected)" />
-            </div>
-        @empty
-            <p class="mt-1 text-sm text-gray-500">Cadastre os serviços primeiro para poder vinculá-los.</p>
-        @endforelse
-        <x-input-error :messages="$errors->get('services.*')" class="mt-2" />
-    </div>
+            @empty
+                <p class="text-sm text-suave">Cadastre os serviços primeiro para poder vinculá-los.</p>
+            @endforelse
+        </div>
+        <x-input-error :messages="$errors->get('services.*')" />
+    </fieldset>
 
     <div>
         <input type="hidden" name="active" value="0">
@@ -37,7 +37,10 @@
     </div>
 </div>
 
-<div class="flex items-center justify-end gap-4 border-t border-gray-100 px-6 py-4">
-    <a href="{{ route('professionals.index') }}" class="text-sm text-gray-600 hover:text-gray-900">Cancelar</a>
+<div class="flex flex-wrap items-center gap-3 border-t border-linha px-6 py-4">
+    @if ($professional->exists)
+        <button type="submit" form="remover" class="mr-auto min-h-11 text-sm font-semibold text-perigo hover:underline">Remover profissional</button>
+    @endif
+    <a href="{{ route('professionals.index') }}" class="ml-auto inline-flex h-11 items-center px-4 text-sm font-semibold hover:text-cafe">Cancelar</a>
     <x-primary-button>Salvar</x-primary-button>
 </div>
