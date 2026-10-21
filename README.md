@@ -85,6 +85,10 @@ php artisan test
 | `database/migrations` | A estrutura das tabelas do banco |
 | `database/seeders/DatabaseSeeder.php` | Os dados de demonstração |
 | `resources/views` | As telas em Blade (HTML com Tailwind) |
+| `resources/views/layouts/sidebar.blade.php` | O menu lateral escuro (no celular vira um botão que abre o menu) |
+| `resources/views/components` | Peças reaproveitadas nas telas: botões, campos, `x-page` (título + ações), `x-avatar`, `x-icon` |
+| `tailwind.config.js` | As cores do design com nomes em português (`creme`, `cafe`, `caramelo`, `tinta`...) e as fontes Inter e Playfair Display |
+| `resources/css/app.css` | Classes prontas do visual: `.cartao`, `.campo`, `.selo` |
 | `lang/pt_BR` | Textos e mensagens de erro em português |
 | `tests/Feature` | Testes automáticos |
 

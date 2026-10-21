@@ -9,16 +9,30 @@ use Illuminate\View\View;
 
 class ServiceController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $services = Service::orderBy('category')->orderBy('name')->get();
+        $category = $request->query('categoria');
+        $services = Service::orderBy('name')->get();
 
-        return view('services.index', compact('services'));
+        // Agrupa por categoria; serviço sem categoria vai para "Outros"
+        $groups = $services
+            ->groupBy(fn (Service $service) => $service->category ?: 'Outros')
+            ->toBase()
+            ->sortKeys();
+
+        return view('services.index', [
+            'categories' => $groups->keys(),
+            'category' => $groups->has($category) ? $category : null,
+            'groups' => $groups->has($category) ? $groups->only($category) : $groups,
+        ]);
     }
 
     public function create(): View
     {
-        return view('services.create', ['service' => new Service(['active' => true, 'duration_minutes' => 30])]);
+        return view('services.create', [
+            'service' => new Service(['active' => true, 'duration_minutes' => 30]),
+            'categories' => $this->categories(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -30,7 +44,10 @@ class ServiceController extends Controller
 
     public function edit(Service $service): View
     {
-        return view('services.edit', compact('service'));
+        return view('services.edit', [
+            'service' => $service,
+            'categories' => $this->categories(),
+        ]);
     }
 
     public function update(Request $request, Service $service): RedirectResponse
@@ -45,6 +62,14 @@ class ServiceController extends Controller
         $service->delete();
 
         return redirect()->route('services.index')->with('status', 'Serviço removido.');
+    }
+
+    /**
+     * Categorias já usadas no salão, para sugerir no formulário.
+     */
+    private function categories(): array
+    {
+        return Service::whereNotNull('category')->distinct()->orderBy('category')->pluck('category')->all();
     }
 
     private function validated(Request $request): array

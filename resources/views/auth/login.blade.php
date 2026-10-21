@@ -1,47 +1,41 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <x-slot name="aside">
+        <x-auth-features />
+    </x-slot>
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login') }}" class="flex flex-col gap-5">
         @csrf
 
-        <!-- Email Address -->
+        <div class="flex flex-col gap-1.5">
+            <h2 class="text-[32px] font-semibold leading-tight">Entrar</h2>
+            <span class="text-[15px] text-suave">Use o e-mail cadastrado do salão.</span>
+        </div>
+
+        <x-auth-session-status :status="session('status')" />
+
         <div>
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" placeholder="voce@seusalao.com.br" class="h-12" />
+            <x-input-error :messages="$errors->get('email')" />
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div>
+            <div class="mb-1.5 flex items-center justify-between">
+                <x-input-label for="password" :value="__('Password')" class="!mb-0" />
+                @if (Route::has('password.request'))
+                    <a href="{{ route('password.request') }}" class="text-sm font-semibold text-cafe hover:text-cafe-escuro">{{ __('Forgot your password?') }}</a>
+                @endif
+            </div>
+            <x-text-input id="password" type="password" name="password" required autocomplete="current-password" class="h-12" />
+            <x-input-error :messages="$errors->get('password')" />
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+        <x-checkbox-input id="remember_me" name="remember" :label="__('Remember me')" />
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
+        <x-primary-button class="h-12 w-full text-[15px]">{{ __('Log in') }}</x-primary-button>
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
+        <p class="text-center text-sm text-suave">
+            Ainda não tem conta? <a href="{{ route('register') }}" class="font-semibold text-cafe hover:text-cafe-escuro">Cadastre seu salão</a>
+        </p>
     </form>
 </x-guest-layout>

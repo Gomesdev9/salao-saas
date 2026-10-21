@@ -45,10 +45,13 @@ class AppointmentController extends Controller
         return view('appointments.index', [
             'day' => $day,
             'appointments' => $appointments->groupBy('professional_id'),
-            'professionals' => $professionals,
+            'professionals' => $professionals->load('services'),
             'startHour' => $startHour,
             'endHour' => $endHour,
             'total' => $appointments->whereIn('status', AppointmentStatus::occupying())->sum('price'),
+            'count' => $appointments->whereIn('status', AppointmentStatus::occupying())->count(),
+            'doneCount' => $appointments->where('status', AppointmentStatus::Done)->count(),
+            'missedCount' => $appointments->whereIn('status', [AppointmentStatus::NoShow, AppointmentStatus::Canceled])->count(),
         ]);
     }
 
