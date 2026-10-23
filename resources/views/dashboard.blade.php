@@ -4,6 +4,32 @@
         <x-link-button :href="route('appointments.create')" icon="mais">Novo agendamento</x-link-button>
     </x-slot>
 
+    @if (collect($firstSteps)->contains('done', false))
+        <section class="cartao flex flex-col gap-4 px-5 py-5 sm:px-6">
+            <div class="flex flex-col gap-1">
+                <h2 class="text-xl font-bold">Primeiros passos</h2>
+                <p class="text-sm text-suave">Deixe o sistema pronto para a sua empresa. Este quadro some quando tudo estiver feito.</p>
+            </div>
+            <ol class="grid gap-3 md:grid-cols-3">
+                @foreach ($firstSteps as $i => $step)
+                    <li>
+                        <a href="{{ route($step['route']) }}"
+                           class="flex min-h-14 items-center gap-3 rounded-campo border px-4 py-3 text-sm font-semibold transition {{ $step['done'] ? 'border-[#3E9A63]/40 bg-[#E7F4EC] text-[#1C5234]' : 'border-linha bg-creme hover:border-caramelo' }}">
+                            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full {{ $step['done'] ? 'bg-[#3E9A63] text-white' : 'bg-pele text-cafe-escuro' }}">
+                                @if ($step['done'])
+                                    <x-icon name="check" class="h-4 w-4" /><span class="sr-only">Feito:</span>
+                                @else
+                                    {{ $i + 1 }}
+                                @endif
+                            </span>
+                            {{ $step['label'] }}
+                        </a>
+                    </li>
+                @endforeach
+            </ol>
+        </section>
+    @endif
+
     <div class="grid gap-3 sm:grid-cols-3">
         <x-stat highlight :href="route('appointments.index')" label="Atendimentos hoje" :value="$todayCount"
                 :hint="$doneCount.' já atendidos · '.($todayCount - $doneCount).' a seguir'" />

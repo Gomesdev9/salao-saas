@@ -45,6 +45,15 @@
         @case('fechar')
             <path d="M6 6l12 12M18 6 6 18" />
             @break
+        @case('link')
+            <path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" /><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" />
+            @break
+        @case('cadeado')
+            <rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" />
+            @break
+        @case('seta')
+            <path d="M5 12h14M13 6l6 6-6 6" />
+            @break
         @case('whatsapp')
             <path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.3L3 21z" /><path d="M9 10c.5 2 2 3.5 4 4l1.2-1.2 2 1-.4 1.6c-3.5.3-7.4-3.6-7.1-7.1L10.3 8l1 2L10 11.2" />
             @break

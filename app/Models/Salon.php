@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BusinessType;
 use Database\Factories\SalonFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,11 +10,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'slug', 'phone', 'city'])]
+#[Fillable(['name', 'slug', 'business_type', 'phone', 'city'])]
 class Salon extends Model
 {
     /** @use HasFactory<SalonFactory> */
     use HasFactory;
+
+    protected function casts(): array
+    {
+        return [
+            'business_type' => BusinessType::class,
+        ];
+    }
 
     /**
      * Gera um slug único a partir do nome, ex.: "Salão da Maria" -> "salao-da-maria-2".

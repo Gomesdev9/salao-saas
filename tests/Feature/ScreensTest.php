@@ -63,6 +63,25 @@ class ScreensTest extends TestCase
             ->assertDontSee('Fora da Semana');
     }
 
+    public function test_dashboard_guides_a_new_company_until_its_first_appointment(): void
+    {
+        // Os cadastros de outra empresa não contam como passos feitos
+        Appointment::factory()->create();
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Primeiros passos')
+            ->assertSee(route('services.create'))
+            ->assertSee(route('professionals.create'))
+            ->assertSee(route('appointments.create'));
+
+        Appointment::factory()->for($this->user->salon)->create();
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('Primeiros passos');
+    }
+
     public function test_professionals_are_split_into_active_and_inactive(): void
     {
         Professional::factory()->for($this->user->salon)->create(['name' => 'Ana Ativa']);

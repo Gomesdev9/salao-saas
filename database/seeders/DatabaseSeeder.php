@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\AppointmentStatus;
+use App\Enums\BusinessType;
 use App\Models\Appointment;
 use App\Models\Client;
 use App\Models\Professional;
@@ -25,6 +26,7 @@ class DatabaseSeeder extends Seeder
         $salon = Salon::create([
             'name' => 'Salão Demonstração',
             'slug' => 'salao-demonstracao',
+            'business_type' => BusinessType::BeautySalon,
             'phone' => '(11) 99999-0000',
             'city' => 'Minha Cidade',
         ]);
