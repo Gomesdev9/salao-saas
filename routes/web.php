@@ -8,8 +8,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
 
-// Por enquanto a página inicial leva direto ao painel (ou ao login). A landing page vem depois.
-Route::redirect('/', '/dashboard');
+// Página de divulgação do sistema, com o convite para a empresa se cadastrar
+Route::view('/', 'site.home')->name('home');
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 

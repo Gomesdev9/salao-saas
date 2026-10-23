@@ -6,7 +6,8 @@ Feito com **Laravel 13**, **Blade**, **Tailwind CSS** e **SQLite** no desenvolvi
 
 ## O que já funciona (Fase 1)
 
-- Cadastro de salão + login (cada conta nova cria um salão)
+- **Página de divulgação** do sistema em `/`, com o convite para a empresa se cadastrar
+- Cadastro da empresa pelo proprietário (nome, tipo de negócio, WhatsApp e cidade) + login. Cada conta nova cria uma empresa, e o painel mostra os primeiros passos até o primeiro agendamento
 - **Agenda do dia** com uma coluna por profissional: clique num horário vazio para agendar, cores por situação (agendado, confirmado, atendido, faltou, cancelado) e bloqueio de horário duplicado
 - Profissionais: telefone, % de comissão, serviços que cada um faz, ativo/inativo
 - Serviços: categoria, duração, preço, ativo/inativo
