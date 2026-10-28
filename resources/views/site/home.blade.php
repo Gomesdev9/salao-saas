@@ -1,5 +1,6 @@
 @use('App\Enums\AppointmentStatus')
 @use('App\Enums\BusinessType')
+@use('App\Enums\Plan')
 
 @php
     $features = [
@@ -26,7 +27,9 @@
     $faq = [
         ['q' => 'Preciso instalar algum programa?', 'a' => 'Não. O sistema funciona no navegador, tanto no computador quanto no celular.'],
         ['q' => 'Outras empresas conseguem ver os meus dados?', 'a' => 'Não. Cada empresa tem a própria conta, e o sistema separa os dados de cada uma: clientes, profissionais, serviços e horários.'],
-        ['q' => 'Posso cadastrar mais de um profissional?', 'a' => 'Sim. Cadastre toda a equipe, com os serviços que cada profissional faz e a comissão de cada um.'],
+        ['q' => 'Como funciona o teste grátis?', 'a' => 'Você escolhe o plano no cadastro e usa o sistema completo por '.Plan::TRIAL_DAYS.' dias, sem cartão de crédito.'],
+        ['q' => 'Posso trocar de plano depois?', 'a' => 'Pode. Na tela "Meu plano" você muda para outro plano quando quiser, inclusive durante o teste.'],
+        ['q' => 'Quantos profissionais posso cadastrar?', 'a' => 'No Essencial, até 2 profissionais ativos. No Profissional, até 6. No Premium não tem limite. Profissionais inativos não contam.'],
         ['q' => 'Quem faz o cadastro da empresa?', 'a' => 'O proprietário. Quem cadastra a empresa vira o administrador da conta e entra com o próprio e-mail e senha.'],
     ];
 
@@ -59,7 +62,7 @@
                     <x-logo />
                 </a>
                 <nav aria-label="Seções da página" class="hidden items-center gap-1 lg:flex">
-                    @foreach (['recursos' => 'Recursos', 'como-funciona' => 'Como funciona', 'para-quem' => 'Para quem é', 'duvidas' => 'Dúvidas'] as $anchor => $label)
+                    @foreach (['recursos' => 'Recursos', 'como-funciona' => 'Como funciona', 'para-quem' => 'Para quem é', 'planos' => 'Planos', 'duvidas' => 'Dúvidas'] as $anchor => $label)
                         <a href="#{{ $anchor }}" class="inline-flex h-11 items-center rounded-full px-4 text-sm font-semibold text-suave transition hover:bg-areia hover:text-tinta">{{ $label }}</a>
                     @endforeach
                 </nav>
@@ -100,7 +103,7 @@
                         @endauth
                     </div>
                     <ul class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-suave">
-                        @foreach (['Sem instalar nada', 'Em português', 'Dados separados por empresa'] as $point)
+                        @foreach (['Teste grátis por '.Plan::TRIAL_DAYS.' dias', 'Sem instalar nada', 'Dados separados por empresa'] as $point)
                             <li class="flex items-center gap-2"><x-icon name="check" class="h-4 w-4 text-cafe" />{{ $point }}</li>
                         @endforeach
                     </ul>
@@ -212,6 +215,31 @@
                 </ul>
             </section>
 
+            {{-- Planos --}}
+            <section id="planos" class="mx-auto flex max-w-[1180px] scroll-mt-24 flex-col gap-10 px-4 py-16 sm:px-6">
+                <div class="flex max-w-[680px] flex-col gap-3">
+                    <span class="text-[13px] font-bold uppercase tracking-[0.16em] text-cafe">Planos</span>
+                    <h2 class="text-[32px] font-semibold leading-tight sm:text-[40px]">Um plano do <em class="italic text-cafe">tamanho da sua equipe</em></h2>
+                    <p class="text-base leading-relaxed text-suave">Todos começam com {{ Plan::TRIAL_DAYS }} dias grátis, sem cartão de crédito. Você pode trocar de plano quando quiser.</p>
+                </div>
+                <div class="grid gap-6 pt-3 lg:grid-cols-3">
+                    @foreach (Plan::cases() as $plan)
+                        <x-plan-card :plan="$plan">
+                            @php
+                                $button = $plan->isHighlighted() ? 'bg-pele text-tinta hover:bg-white' : 'bg-cafe text-white hover:bg-cafe-escuro';
+                            @endphp
+                            @auth
+                                <a href="{{ route('plan.edit') }}" class="inline-flex h-12 w-full items-center justify-center rounded-full text-[15px] font-semibold transition {{ $button }}">Ver meu plano</a>
+                            @else
+                                <a href="{{ route('register', ['plano' => $plan->value]) }}" class="inline-flex h-12 w-full items-center justify-center rounded-full text-[15px] font-semibold transition {{ $button }}">
+                                    Testar grátis por {{ Plan::TRIAL_DAYS }} dias
+                                </a>
+                            @endauth
+                        </x-plan-card>
+                    @endforeach
+                </div>
+            </section>
+
             {{-- Dúvidas --}}
             <section id="duvidas" class="mx-auto flex max-w-[860px] scroll-mt-24 flex-col gap-8 px-4 py-16 sm:px-6">
                 <div class="flex flex-col gap-3 text-center">
@@ -236,7 +264,7 @@
                 <div class="mx-auto flex max-w-[1180px] flex-col items-start gap-6 rounded-[36px] bg-pele px-6 py-12 sm:px-12 lg:flex-row lg:items-center lg:justify-between">
                     <div class="flex max-w-[620px] flex-col gap-3">
                         <h2 class="text-[32px] font-semibold leading-tight sm:text-[40px]">Vamos organizar a <em class="italic text-cafe">sua agenda</em>?</h2>
-                        <p class="text-base leading-relaxed text-suave">Cadastre a sua empresa e entre no sistema na mesma hora.</p>
+                        <p class="text-base leading-relaxed text-suave">Cadastre a sua empresa, entre no sistema na mesma hora e use {{ Plan::TRIAL_DAYS }} dias grátis.</p>
                     </div>
                     @auth
                         <a href="{{ route('dashboard') }}" class="inline-flex h-14 shrink-0 items-center gap-2 rounded-full bg-tinta px-7 text-base font-semibold text-creme transition hover:bg-menu-ativo">Ir para o painel<x-icon name="seta" class="h-[18px] w-[18px]" /></a>

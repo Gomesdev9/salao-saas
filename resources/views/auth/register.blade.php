@@ -9,6 +9,7 @@
                 </li>
             @endforeach
         </ol>
+        <p class="flex items-center gap-2.5 text-[15px] text-menu-texto"><x-icon name="check" class="h-[18px] w-[18px] text-[#D9A57F]" />{{ \App\Enums\Plan::TRIAL_DAYS }} dias grátis em qualquer plano, sem cartão.</p>
     </x-slot>
 
     <form method="POST" action="{{ route('register') }}" class="flex flex-col gap-5">
@@ -18,6 +19,27 @@
             <h2 class="text-[32px] font-semibold leading-tight">Cadastre sua empresa</h2>
             <span class="text-[15px] text-suave">Você será o proprietário e administrador da conta.</span>
         </div>
+
+        <fieldset class="flex flex-col gap-2.5">
+            <legend class="pb-2.5 text-[13px] font-bold uppercase tracking-wider text-cafe">O plano</legend>
+            @php($chosen = old('plan', $selectedPlan->value))
+            @foreach ($plans as $plan)
+                <label class="flex min-h-14 cursor-pointer items-center gap-3 rounded-campo border border-linha bg-creme px-4 py-2.5 transition hover:border-linha-forte has-[:checked]:border-cafe has-[:checked]:bg-pele/50 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-cafe">
+                    <input type="radio" name="plan" value="{{ $plan->value }}" @checked($chosen === $plan->value) required class="h-[18px] w-[18px] shrink-0 border-linha-forte text-cafe focus:ring-caramelo">
+                    <span class="flex min-w-0 flex-1 flex-col">
+                        <span class="flex flex-wrap items-center gap-x-2 text-[15px] font-bold">
+                            {{ $plan->label() }}
+                            @if ($plan->isHighlighted())
+                                <span class="text-xs font-semibold text-cafe">Mais escolhido</span>
+                            @endif
+                        </span>
+                        <span class="text-[13px] text-suave">{{ $plan->features()[0]['text'] }}</span>
+                    </span>
+                    <span class="shrink-0 text-right text-[15px] font-bold">{{ $plan->formattedPrice() }}<span class="block text-xs font-normal text-suave">por mês</span></span>
+                </label>
+            @endforeach
+            <x-input-error :messages="$errors->get('plan')" />
+        </fieldset>
 
         <fieldset class="flex flex-col gap-3.5">
             <legend class="pb-2.5 text-[13px] font-bold uppercase tracking-wider text-cafe">A empresa</legend>
@@ -76,7 +98,7 @@
             <x-input-error :messages="$errors->get('password_confirmation')" class="!mt-0" />
         </fieldset>
 
-        <x-primary-button class="h-12 w-full text-[15px]">Criar conta e entrar no sistema</x-primary-button>
+        <x-primary-button class="h-12 w-full text-[15px]">Começar meu teste grátis</x-primary-button>
 
         <p class="text-center text-sm text-suave">
             {{ __('Already registered?') }} <a href="{{ route('login') }}" class="font-semibold text-cafe hover:text-cafe-escuro">{{ __('Log in') }}</a>

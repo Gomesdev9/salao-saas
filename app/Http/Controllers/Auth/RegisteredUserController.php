@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Enums\BusinessType;
+use App\Enums\Plan;
 use App\Http\Controllers\Controller;
 use App\Models\Salon;
 use App\Models\User;
@@ -22,10 +23,13 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
         return view('auth.register', [
             'businessTypes' => BusinessType::cases(),
+            'plans' => Plan::cases(),
+            // Plano escolhido na página de divulgação (?plano=premium); sem escolha, fica o mais indicado
+            'selectedPlan' => Plan::tryFrom((string) $request->query('plano')) ?? Plan::Professional,
         ]);
     }
 
@@ -39,6 +43,7 @@ class RegisteredUserController extends Controller
         $request->validate([
             'salon_name' => ['required', 'string', 'max:255'],
             'business_type' => ['required', Rule::enum(BusinessType::class)],
+            'plan' => ['required', Rule::enum(Plan::class)],
             'phone' => ['required', 'string', 'max:30'],
             'city' => ['nullable', 'string', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
@@ -52,6 +57,8 @@ class RegisteredUserController extends Controller
                 'name' => $request->salon_name,
                 'slug' => Salon::uniqueSlug($request->salon_name),
                 'business_type' => $request->business_type,
+                'plan' => $request->plan,
+                'trial_ends_at' => now()->addDays(Plan::TRIAL_DAYS),
                 'phone' => $request->phone,
                 'city' => $request->city,
             ]);
@@ -70,6 +77,6 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect(route('dashboard', absolute: false))
-            ->with('status', 'Conta criada! Siga os primeiros passos abaixo para deixar o sistema pronto.');
+            ->with('status', 'Conta criada! Você tem '.Plan::TRIAL_DAYS.' dias grátis. Siga os primeiros passos abaixo para deixar o sistema pronto.');
     }
 }

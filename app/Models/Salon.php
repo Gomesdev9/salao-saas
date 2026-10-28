@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\BusinessType;
+use App\Enums\Plan;
 use Database\Factories\SalonFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'slug', 'business_type', 'phone', 'city'])]
+#[Fillable(['name', 'slug', 'business_type', 'plan', 'trial_ends_at', 'phone', 'city'])]
 class Salon extends Model
 {
     /** @use HasFactory<SalonFactory> */
@@ -20,7 +21,33 @@ class Salon extends Model
     {
         return [
             'business_type' => BusinessType::class,
+            'plan' => Plan::class,
+            'trial_ends_at' => 'datetime',
         ];
+    }
+
+    public function onTrial(): bool
+    {
+        return $this->trial_ends_at?->isFuture() ?? false;
+    }
+
+    /** Dias que faltam do teste grátis, contando hoje. */
+    public function trialDaysLeft(): int
+    {
+        return $this->onTrial() ? (int) ceil(now()->diffInDays($this->trial_ends_at)) : 0;
+    }
+
+    public function activeProfessionalsCount(): int
+    {
+        return $this->professionals()->where('active', true)->count();
+    }
+
+    /** Se ainda cabe mais um profissional ativo no plano. */
+    public function canActivateProfessional(): bool
+    {
+        $limit = $this->plan->professionalLimit();
+
+        return $limit === null || $this->activeProfessionalsCount() < $limit;
     }
 
     /**
