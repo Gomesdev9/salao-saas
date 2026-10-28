@@ -8,6 +8,7 @@ Feito com **Laravel 13**, **Blade**, **Tailwind CSS** e **SQLite** no desenvolvi
 
 - **Página de divulgação** do sistema em `/`, com o convite para a empresa se cadastrar
 - Cadastro da empresa pelo proprietário (nome, tipo de negócio, WhatsApp e cidade) + login. Cada conta nova cria uma empresa, e o painel mostra os primeiros passos até o primeiro agendamento
+- **Planos**: Essencial (R$ 49,90, até 2 profissionais ativos), Profissional (R$ 89,90, até 6) e Premium (R$ 149,90, sem limite). A empresa escolhe no cadastro, ganha 14 dias grátis e troca de plano na tela "Meu plano". Preços e limites ficam em `app/Enums/Plan.php`. A cobrança automática ainda não está ligada
 - **Agenda do dia** com uma coluna por profissional: clique num horário vazio para agendar, cores por situação (agendado, confirmado, atendido, faltou, cancelado) e bloqueio de horário duplicado
 - Profissionais: telefone, % de comissão, serviços que cada um faz, ativo/inativo
 - Serviços: categoria, duração, preço, ativo/inativo

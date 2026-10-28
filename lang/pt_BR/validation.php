@@ -39,6 +39,7 @@ return [
         'password' => 'senha',
         'salon_name' => 'nome da empresa',
         'business_type' => 'tipo de negócio',
+        'plan' => 'plano',
         'city' => 'cidade',
         'phone' => 'telefone',
         'commission_percent' => 'comissão',

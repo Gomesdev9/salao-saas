@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\AppointmentStatus;
 use App\Enums\BusinessType;
+use App\Enums\Plan;
 use App\Models\Appointment;
 use App\Models\Client;
 use App\Models\Professional;
@@ -27,6 +28,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Studio Bela Vista',
             'slug' => 'studio-bela-vista',
             'business_type' => BusinessType::BeautySalon,
+            'plan' => Plan::Professional,
+            'trial_ends_at' => now()->addDays(Plan::TRIAL_DAYS),
             'phone' => '(11) 99999-0000',
             'city' => 'São Paulo - SP',
         ]);

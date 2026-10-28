@@ -3,6 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Enums\BusinessType;
+use App\Enums\Plan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,6 +16,18 @@ class RegistrationTest extends TestCase
         $response = $this->get('/register');
 
         $response->assertStatus(200);
+    }
+
+    public function test_plan_chosen_on_the_home_page_comes_selected(): void
+    {
+        $this->get('/register?plano=premium')
+            ->assertOk()
+            ->assertSee('value="premium" checked', false);
+
+        // Sem plano (ou com um plano que não existe) fica marcado o mais indicado
+        $this->get('/register?plano=ouro')
+            ->assertOk()
+            ->assertSee('value="profissional" checked', false);
     }
 
     public function test_owners_can_register_their_company(): void
@@ -32,6 +45,16 @@ class RegistrationTest extends TestCase
         $this->assertSame(BusinessType::AestheticsClinic, $user->salon->business_type);
         $this->assertSame('(41) 99876-5432', $user->salon->phone);
         $this->assertSame('Matinhos - PR', $user->salon->city);
+        $this->assertSame(Plan::Premium, $user->salon->plan);
+        $this->assertTrue($user->salon->onTrial());
+        $this->assertSame(Plan::TRIAL_DAYS, $user->salon->trialDaysLeft());
+    }
+
+    public function test_plan_must_be_one_of_the_three(): void
+    {
+        $this->post('/register', $this->validData(['plan' => 'ouro']))->assertSessionHasErrors('plan');
+        $this->post('/register', $this->validData(['plan' => '']))->assertSessionHasErrors('plan');
+        $this->assertGuest();
     }
 
     public function test_company_type_and_whatsapp_are_required(): void
@@ -59,6 +82,7 @@ class RegistrationTest extends TestCase
         return [
             'salon_name' => 'Salão da Maria',
             'business_type' => BusinessType::AestheticsClinic->value,
+            'plan' => Plan::Premium->value,
             'phone' => '(41) 99876-5432',
             'city' => 'Matinhos - PR',
             'name' => 'Test User',
