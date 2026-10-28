@@ -9,6 +9,7 @@ use App\Models\Professional;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class AppointmentTest extends TestCase
@@ -38,7 +39,7 @@ class AppointmentTest extends TestCase
         $this->actingAs($this->user);
     }
 
-    private function book(array $overrides = []): \Illuminate\Testing\TestResponse
+    private function book(array $overrides = []): TestResponse
     {
         return $this->post(route('appointments.store'), array_merge([
             'client_id' => $this->client->id,
@@ -64,6 +65,28 @@ class AppointmentTest extends TestCase
             ->assertOk()
             ->assertSee('value="14:30"', false);
         $this->get(route('appointments.edit', Appointment::first()))->assertOk();
+    }
+
+    public function test_phone_agenda_lists_the_day_and_filters_by_professional(): void
+    {
+        $bruna = Professional::factory()->for($this->user->salon)->create(['name' => 'Bruna Lima']);
+        $bruna->services()->attach($this->service);
+        $this->book();
+        $this->book(['professional_id' => $bruna->id, 'time' => '11:00']);
+        [$ofAna, $ofBruna] = Appointment::orderBy('starts_at')->get()->map(fn (Appointment $a) => 'href="'.route('appointments.edit', $a).'"');
+
+        // Sem filtro: cada horário aparece na lista do celular e na coluna do computador
+        $all = $this->get(route('appointments.index', ['data' => '2026-11-03']))
+            ->assertOk()
+            ->assertSee('Todos · 2')
+            ->assertSee('Bruna · 1')
+            ->assertSee('aria-controls="menu-mais"', false);
+        $this->assertSame(2, substr_count($all->getContent(), $ofAna));
+
+        // Filtrando a Bruna: o horário da Ana fica só na grade do computador
+        $filtered = $this->get(route('appointments.index', ['data' => '2026-11-03', 'profissional' => $bruna->id]))->assertOk();
+        $this->assertSame(1, substr_count($filtered->getContent(), $ofAna));
+        $this->assertSame(2, substr_count($filtered->getContent(), $ofBruna));
     }
 
     public function test_booking_calculates_end_time_and_price(): void
