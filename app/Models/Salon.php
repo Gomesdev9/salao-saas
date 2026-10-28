@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\BusinessType;
 use App\Enums\Plan;
+use App\Support\Phone;
+use Carbon\CarbonInterface;
 use Database\Factories\SalonFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -54,6 +56,54 @@ class Salon extends Model
     public function hasFinance(): bool
     {
         return $this->onTrial() || $this->plan->includesFinance();
+    }
+
+    /** Se a página pública de agendamento aceita horários (mesma regra do Financeiro). */
+    public function hasOnlineBooking(): bool
+    {
+        return $this->onTrial() || $this->plan->includesOnlineBooking();
+    }
+
+    /** Endereço da página em que a cliente agenda sozinha. */
+    public function bookingUrl(): string
+    {
+        return route('booking.service', $this);
+    }
+
+    public function whatsappUrl(): ?string
+    {
+        return Phone::whatsappUrl($this->phone);
+    }
+
+    /**
+     * Horário de funcionamento por dia da semana (1 = segunda ... 7 = domingo), null = fechado.
+     * Por enquanto é o mesmo para todas as empresas.
+     *
+     * @return array<int, array{0: string, 1: string}|null>
+     */
+    public function openingHours(): array
+    {
+        return [
+            1 => ['09:00', '19:00'],
+            2 => ['09:00', '19:00'],
+            3 => ['09:00', '19:00'],
+            4 => ['09:00', '19:00'],
+            5 => ['09:00', '19:00'],
+            6 => ['09:00', '14:00'],
+            7 => null,
+        ];
+    }
+
+    /** @return array{0: string, 1: string}|null */
+    public function hoursOn(CarbonInterface $day): ?array
+    {
+        return $this->openingHours()[$day->dayOfWeekIso];
+    }
+
+    /** Ex.: "Seg a sex, 9h às 19h · Sáb, 9h às 14h · Domingo fechado" */
+    public function openingHoursSummary(): string
+    {
+        return 'Seg a sex, 9h às 19h · Sáb, 9h às 14h · Domingo fechado';
     }
 
     /**

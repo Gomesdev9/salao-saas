@@ -57,6 +57,15 @@
         @case('seta')
             <path d="M5 12h14M13 6l6 6-6 6" />
             @break
+        @case('usuario')
+            <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5" />
+            @break
+        @case('estrela')
+            <path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z" />
+            @break
+        @case('local')
+            <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" /><circle cx="12" cy="9.5" r="2.5" />
+            @break
         @case('whatsapp')
             <path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.3L3 21z" /><path d="M9 10c.5 2 2 3.5 4 4l1.2-1.2 2 1-.4 1.6c-3.5.3-7.4-3.6-7.1-7.1L10.3 8l1 2L10 11.2" />
             @break

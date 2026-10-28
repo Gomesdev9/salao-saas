@@ -10,11 +10,11 @@
         ['icon' => 'profissionais', 'title' => 'Profissionais e comissões', 'text' => 'Cadastre a equipe, os serviços que cada profissional faz e a porcentagem de comissão de cada um.'],
         ['icon' => 'painel', 'title' => 'Painel do dia', 'text' => 'Assim que você entra: atendimentos de hoje, valor previsto e os horários que ainda faltam confirmar.'],
         ['icon' => 'financeiro', 'title' => 'Financeiro e caixa', 'text' => 'Receba no Pix, dinheiro ou cartão direto do horário, acompanhe as despesas a vencer, o lucro do mês e quanto pagar de comissão a cada profissional.'],
+        ['icon' => 'link', 'title' => 'Agendamento online', 'text' => 'Um link da sua empresa para a cliente escolher o procedimento, o profissional e um horário livre. O horário cai direto na agenda, e ela remarca ou cancela pelo celular.'],
         ['icon' => 'cadeado', 'title' => 'Dados só seus', 'text' => 'Cada empresa tem a própria conta e só enxerga os próprios clientes, profissionais e horários.'],
     ];
 
     $comingSoon = [
-        ['icon' => 'link', 'title' => 'Agendamento online pelo link da empresa'],
         ['icon' => 'whatsapp', 'title' => 'Lembretes por WhatsApp'],
     ];
 

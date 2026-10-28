@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToSalon;
+use App\Support\Phone;
 use Database\Factories\ClientFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 #[Fillable(['name', 'whatsapp', 'birthday', 'notes'])]
 class Client extends Model
@@ -27,18 +29,17 @@ class Client extends Model
      */
     public function whatsappUrl(): ?string
     {
-        $digits = preg_replace('/\D/', '', (string) $this->whatsapp);
+        return Phone::whatsappUrl($this->whatsapp);
+    }
 
-        if (strlen($digits) < 10) {
-            return null;
+    /** Chave do link "Meus horários", criada no primeiro agendamento pela página do salão. */
+    public function accessToken(): string
+    {
+        if (! $this->access_token) {
+            $this->forceFill(['access_token' => Str::random(40)])->save();
         }
 
-        // Número brasileiro sem DDI: acrescenta o 55
-        if (strlen($digits) <= 11) {
-            $digits = '55'.$digits;
-        }
-
-        return "https://wa.me/{$digits}";
+        return $this->access_token;
     }
 
     /**

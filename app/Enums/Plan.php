@@ -63,6 +63,12 @@ enum Plan: string
         return $this !== self::Essential;
     }
 
+    /** Agendamento online pelo link da empresa também fica nos planos Profissional e Premium. */
+    public function includesOnlineBooking(): bool
+    {
+        return $this !== self::Essential;
+    }
+
     /** O plano mais indicado, destacado na página de divulgação e já marcado no cadastro. */
     public function isHighlighted(): bool
     {
@@ -86,11 +92,8 @@ enum Plan: string
 
         if ($this !== self::Essential) {
             $features[] = ['text' => 'Financeiro e caixa', 'soon' => false];
+            $features[] = ['text' => 'Agendamento online pelo link da empresa', 'soon' => false];
             $features[] = ['text' => 'Lembretes por WhatsApp', 'soon' => true];
-        }
-
-        if ($this === self::Premium) {
-            $features[] = ['text' => 'Agendamento online pelo link da empresa', 'soon' => true];
         }
 
         return $features;
