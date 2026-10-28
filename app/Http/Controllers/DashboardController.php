@@ -43,6 +43,21 @@ class DashboardController extends Controller
             'professionalsCount' => Professional::where('active', true)->count(),
             'servicesCount' => Service::where('active', true)->count(),
             'clientsCount' => Client::count(),
+            'firstSteps' => $this->firstSteps(),
         ]);
+    }
+
+    /**
+     * Primeiros passos de uma conta nova. O quadro some do painel quando todos estiverem feitos.
+     *
+     * @return list<array{label: string, route: string, done: bool}>
+     */
+    private function firstSteps(): array
+    {
+        return [
+            ['label' => 'Cadastre seus serviços', 'route' => 'services.create', 'done' => Service::exists()],
+            ['label' => 'Cadastre os profissionais', 'route' => 'professionals.create', 'done' => Professional::exists()],
+            ['label' => 'Faça o primeiro agendamento', 'route' => 'appointments.create', 'done' => Appointment::exists()],
+        ];
     }
 }

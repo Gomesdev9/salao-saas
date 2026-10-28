@@ -14,11 +14,13 @@
         <div class="min-h-screen lg:flex">
             @include('layouts.sidebar')
 
-            <main class="min-w-0 flex-1 px-4 pb-10 pt-2 sm:px-6 lg:px-8 lg:pt-8">
+            <main class="min-w-0 flex-1 px-4 pb-32 pt-5 sm:px-6 lg:px-8 lg:pb-10 lg:pt-8">
                 <div class="{{ $wide ? '' : 'max-w-[1100px]' }}">
                     {{ $slot }}
                 </div>
             </main>
         </div>
+
+        @include('layouts.bottom-nav')
     </body>
 </html>

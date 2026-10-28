@@ -22,13 +22,13 @@ class AppointmentController extends Controller
     private const DAY_END_HOUR = 20;
 
     /**
-     * Agenda do dia: uma coluna por profissional.
+     * Agenda do dia: uma coluna por profissional no computador e uma lista (com filtro por profissional) no celular.
      */
     public function index(Request $request): View
     {
         $day = $this->parseDay($request->query('data'));
 
-        $appointments = Appointment::with(['client', 'service'])
+        $appointments = Appointment::with(['client', 'service', 'professional'])
             ->whereBetween('starts_at', [$day->copy()->startOfDay(), $day->copy()->endOfDay()])
             ->orderBy('starts_at')
             ->get();
@@ -45,6 +45,8 @@ class AppointmentController extends Controller
         return view('appointments.index', [
             'day' => $day,
             'appointments' => $appointments->groupBy('professional_id'),
+            'dayList' => $appointments,
+            'professionalFilter' => $professionals->firstWhere('id', $request->integer('profissional')),
             'professionals' => $professionals->load('services'),
             'startHour' => $startHour,
             'endHour' => $endHour,

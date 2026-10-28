@@ -8,7 +8,7 @@
 
         <div class="flex flex-col gap-1.5">
             <h2 class="text-[32px] font-semibold leading-tight">Entrar</h2>
-            <span class="text-[15px] text-suave">Use o e-mail cadastrado do salão.</span>
+            <span class="text-[15px] text-suave">Use o e-mail cadastrado da empresa.</span>
         </div>
 
         <x-auth-session-status :status="session('status')" />
@@ -35,7 +35,7 @@
         <x-primary-button class="h-12 w-full text-[15px]">{{ __('Log in') }}</x-primary-button>
 
         <p class="text-center text-sm text-suave">
-            Ainda não tem conta? <a href="{{ route('register') }}" class="font-semibold text-cafe hover:text-cafe-escuro">Cadastre seu salão</a>
+            Ainda não tem conta? <a href="{{ route('register') }}" class="font-semibold text-cafe hover:text-cafe-escuro">Cadastre sua empresa</a>
         </p>
     </form>
 </x-guest-layout>
