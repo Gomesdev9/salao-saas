@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProfessionalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
@@ -23,6 +24,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile/salao', [ProfileController::class, 'updateSalon'])->name('profile.salon');
+
+    // Plano da empresa
+    Route::get('plano', [PlanController::class, 'edit'])->name('plan.edit');
+    Route::patch('plano', [PlanController::class, 'update'])->name('plan.update');
 
     // Agenda
     Route::resource('agenda', AppointmentController::class)

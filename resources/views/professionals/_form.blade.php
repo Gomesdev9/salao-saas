@@ -34,6 +34,10 @@
     <div>
         <input type="hidden" name="active" value="0">
         <x-checkbox-input name="active" value="1" label="Ativo (aparece na agenda)" :checked="old('active', $professional->active)" />
+        <x-input-error :messages="$errors->get('active')" />
+        @error('active')
+            <a href="{{ route('plan.edit') }}" class="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-cafe underline">Ver os planos</a>
+        @enderror
     </div>
 </div>
 

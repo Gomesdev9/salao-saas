@@ -36,6 +36,9 @@
         @case('busca')
             <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
             @break
+        @case('plano')
+            <path d="M6 3h12l4 6-10 12L2 9Z" /><path d="M2 9h20M12 21 8 9l4-6 4 6-4 12" />
+            @break
         @case('check')
             <path d="M20 6 9 17l-5-5" />
             @break
