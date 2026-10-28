@@ -79,7 +79,7 @@ enum Plan: string
         ];
 
         if ($this !== self::Essential) {
-            $features[] = ['text' => 'Financeiro e caixa', 'soon' => true];
+            $features[] = ['text' => 'Financeiro e caixa', 'soon' => false];
             $features[] = ['text' => 'Lembretes por WhatsApp', 'soon' => true];
         }
 
