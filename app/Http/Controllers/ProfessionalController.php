@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AppointmentStatus;
 use App\Models\Professional;
 use App\Models\Service;
 use Illuminate\Http\RedirectResponse;
@@ -11,12 +12,25 @@ use Illuminate\View\View;
 
 class ProfessionalController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        // O escopo BelongsToSalon já filtra pelo salão do usuário logado
-        $professionals = Professional::with('services')->orderBy('name')->get();
+        $showInactive = $request->boolean('inativos');
 
-        return view('professionals.index', compact('professionals'));
+        // O escopo BelongsToSalon já filtra pelo salão do usuário logado
+        $professionals = Professional::with('services')
+            ->withCount(['appointments as today_count' => fn ($query) => $query
+                ->whereBetween('starts_at', [today(), today()->endOfDay()])
+                ->whereIn('status', AppointmentStatus::occupying())])
+            ->where('active', ! $showInactive)
+            ->orderBy('name')
+            ->get();
+
+        return view('professionals.index', [
+            'professionals' => $professionals,
+            'showInactive' => $showInactive,
+            'activeCount' => Professional::where('active', true)->count(),
+            'inactiveCount' => Professional::where('active', false)->count(),
+        ]);
     }
 
     public function create(): View
