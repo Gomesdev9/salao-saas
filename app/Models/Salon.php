@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'slug', 'business_type', 'plan', 'trial_ends_at', 'phone', 'city'])]
+#[Fillable(['name', 'slug', 'business_type', 'plan', 'trial_ends_at', 'phone', 'city', 'pix_key'])]
 class Salon extends Model
 {
     /** @use HasFactory<SalonFactory> */
@@ -48,6 +48,12 @@ class Salon extends Model
         $limit = $this->plan->professionalLimit();
 
         return $limit === null || $this->activeProfessionalsCount() < $limit;
+    }
+
+    /** Durante o teste grátis tudo fica liberado; depois, depende do plano. */
+    public function hasFinance(): bool
+    {
+        return $this->onTrial() || $this->plan->includesFinance();
     }
 
     /**

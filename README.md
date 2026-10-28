@@ -13,6 +13,7 @@ Feito com **Laravel 13**, **Blade**, **Tailwind CSS** e **SQLite** no desenvolvi
 - Profissionais: telefone, % de comissão, serviços que cada um faz, ativo/inativo
 - Serviços: categoria, duração, preço, ativo/inativo
 - Clientes: WhatsApp, aniversário, observações, busca por nome ou telefone
+- **Financeiro** (planos Profissional e Premium; no Essencial só o receber pagamento): receber o pagamento do atendimento (Pix, dinheiro com troco, débito ou crédito parcelado, com desconto), visão do mês com gráfico, lançamentos de entradas e despesas, e comissões de cada profissional com vales
 - Isolamento entre salões (um salão nunca vê dados de outro)
 - Tudo em português
 
@@ -69,6 +70,8 @@ Login de demonstração:
 
 Enquanto estiver mexendo no visual, deixe `npm run dev` rodando num terminal: o Tailwind recompila sozinho a cada alteração.
 
+**Depois de um `git pull`**, rode `php artisan migrate` (cria as tabelas novas) e `npm run build`. Para recomeçar com os dados de demonstração, use `php artisan migrate:fresh --seed` (apaga tudo do banco local).
+
 ### 5. Rodar os testes
 
 ```powershell
@@ -87,7 +90,12 @@ php artisan test
 | `database/migrations` | A estrutura das tabelas do banco |
 | `database/seeders/DatabaseSeeder.php` | Os dados de demonstração |
 | `resources/views` | As telas em Blade (HTML com Tailwind) |
-| `resources/views/layouts/sidebar.blade.php` | O menu lateral escuro (no celular vira um botão que abre o menu) |
+| `resources/views/layouts/sidebar.blade.php` | O menu lateral escuro do computador |
+| `resources/views/layouts/bottom-nav.blade.php` | O menu flutuante do celular (o "Mais" guarda Profissionais, Serviços e Financeiro) |
+| `app/Http/Controllers/PaymentController.php` | Receber o pagamento de um atendimento |
+| `app/Http/Controllers/FinanceController.php` | Visão do mês e lista de lançamentos do financeiro |
+| `app/Http/Controllers/CommissionController.php` | Comissões do mês (comissão − vales = a pagar) |
+| `app/Support/Money.php` | Mostrar e ler valores em reais (`R$ 1.234,56`) |
 | `resources/views/components` | Peças reaproveitadas nas telas: botões, campos, `x-page` (título + ações), `x-avatar`, `x-icon` |
 | `tailwind.config.js` | As cores do design com nomes em português (`creme`, `cafe`, `caramelo`, `tinta`...) e as fontes Inter e Playfair Display |
 | `resources/css/app.css` | Classes prontas do visual: `.cartao`, `.campo`, `.selo` |

@@ -5,6 +5,7 @@
         ['route' => 'clients.index', 'active' => 'clients.*', 'icon' => 'clientes', 'label' => 'Clientes'],
         ['route' => 'professionals.index', 'active' => 'professionals.*', 'icon' => 'profissionais', 'label' => 'Profissionais'],
         ['route' => 'services.index', 'active' => 'services.*', 'icon' => 'servicos', 'label' => 'Serviços'],
+        ['route' => 'finance.index', 'active' => 'finance.*', 'icon' => 'financeiro', 'label' => 'Financeiro'],
     ];
     $user = Auth::user();
     $salon = $user->salon;

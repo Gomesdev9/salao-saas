@@ -57,6 +57,12 @@ enum Plan: string
         };
     }
 
+    /** Financeiro (visão do mês, lançamentos e comissões) fica nos planos Profissional e Premium. */
+    public function includesFinance(): bool
+    {
+        return $this !== self::Essential;
+    }
+
     /** O plano mais indicado, destacado na página de divulgação e já marcado no cadastro. */
     public function isHighlighted(): bool
     {
@@ -79,7 +85,7 @@ enum Plan: string
         ];
 
         if ($this !== self::Essential) {
-            $features[] = ['text' => 'Financeiro e caixa', 'soon' => true];
+            $features[] = ['text' => 'Financeiro e caixa', 'soon' => false];
             $features[] = ['text' => 'Lembretes por WhatsApp', 'soon' => true];
         }
 

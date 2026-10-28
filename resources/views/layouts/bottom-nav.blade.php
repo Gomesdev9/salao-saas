@@ -8,9 +8,10 @@
     $more = [
         ['route' => 'professionals.index', 'active' => 'professionals.*', 'icon' => 'profissionais', 'label' => 'Profissionais'],
         ['route' => 'services.index', 'active' => 'services.*', 'icon' => 'servicos', 'label' => 'Serviços'],
+        ['route' => 'finance.index', 'active' => 'finance.*', 'icon' => 'financeiro', 'label' => 'Financeiro'],
         ['route' => 'plan.edit', 'active' => 'plan.*', 'icon' => 'plano', 'label' => 'Meu plano'],
     ];
-    $moreActive = request()->routeIs('professionals.*', 'services.*', 'plan.*', 'profile.*');
+    $moreActive = request()->routeIs('professionals.*', 'services.*', 'finance.*', 'plan.*', 'profile.*');
     $user = Auth::user();
 @endphp
 

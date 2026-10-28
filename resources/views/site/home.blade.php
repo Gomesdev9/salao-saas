@@ -9,11 +9,11 @@
         ['icon' => 'servicos', 'title' => 'Serviços', 'text' => 'Categoria, duração e preço de cada serviço. Ao agendar, o horário de término e o valor já saem do serviço escolhido.'],
         ['icon' => 'profissionais', 'title' => 'Profissionais e comissões', 'text' => 'Cadastre a equipe, os serviços que cada profissional faz e a porcentagem de comissão de cada um.'],
         ['icon' => 'painel', 'title' => 'Painel do dia', 'text' => 'Assim que você entra: atendimentos de hoje, valor previsto e os horários que ainda faltam confirmar.'],
+        ['icon' => 'financeiro', 'title' => 'Financeiro e caixa', 'text' => 'Receba no Pix, dinheiro ou cartão direto do horário, acompanhe as despesas a vencer, o lucro do mês e quanto pagar de comissão a cada profissional.'],
         ['icon' => 'cadeado', 'title' => 'Dados só seus', 'text' => 'Cada empresa tem a própria conta e só enxerga os próprios clientes, profissionais e horários.'],
     ];
 
     $comingSoon = [
-        ['icon' => 'financeiro', 'title' => 'Financeiro e caixa'],
         ['icon' => 'link', 'title' => 'Agendamento online pelo link da empresa'],
         ['icon' => 'whatsapp', 'title' => 'Lembretes por WhatsApp'],
     ];
@@ -158,7 +158,8 @@
                 </div>
                 <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($features as $feature)
-                        <li class="cartao flex flex-col gap-3 p-6">
+                        {{-- Com 7 recursos, o último ocupa a linha inteira para a grade não ficar com um cartão sozinho --}}
+                        <li @class(['cartao flex flex-col gap-3 p-6', 'sm:col-span-2 lg:col-span-3' => $loop->last && $loop->count % 3 === 1])>
                             <span class="flex h-12 w-12 items-center justify-center rounded-campo bg-pele text-cafe-escuro"><x-icon :name="$feature['icon']" class="h-[22px] w-[22px]" /></span>
                             <h3 class="text-lg font-bold">{{ $feature['title'] }}</h3>
                             <p class="text-[15px] leading-relaxed text-suave">{{ $feature['text'] }}</p>

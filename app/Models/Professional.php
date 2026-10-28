@@ -34,6 +34,11 @@ class Professional extends Model
         return $this->hasMany(Appointment::class);
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
     /**
      * Área principal (a categoria mais comum entre os serviços que faz), ex.: "Cabelo".
      */
