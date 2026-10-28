@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\AppointmentStatus;
 use App\Enums\PaymentMethod;
+use App\Enums\Plan;
 use App\Models\Appointment;
 use App\Models\CommissionAdvance;
 use App\Models\Expense;
@@ -253,6 +254,26 @@ class FinanceTest extends TestCase
         // O código interno do Breeze não aparece como aviso
         $this->patch(route('profile.update'), ['name' => 'João', 'email' => $this->user->email]);
         $this->get(route('profile.edit'))->assertDontSee('profile-updated');
+    }
+
+    public function test_essential_plan_sees_upgrade_invite_after_trial(): void
+    {
+        $salon = $this->user->salon;
+
+        $salon->update(['plan' => Plan::Essential, 'trial_ends_at' => now()->addDays(3)]);
+        $this->get(route('finance.index'))->assertOk()->assertSee('Recebido');
+
+        $salon->update(['trial_ends_at' => now()->subDay()]);
+        $this->get(route('finance.index'))->assertForbidden()->assertSee('O Financeiro faz parte dos planos Profissional e Premium');
+        $this->post(route('finance.expenses.store'), ['description' => 'Luz', 'category' => 'Contas da casa', 'amount' => '10', 'due_date' => '2026-10-21'])
+            ->assertForbidden();
+        $this->assertSame(0, Expense::count());
+
+        // Receber pagamento continua liberado, para nenhum valor ficar sem registro
+        $this->get(route('appointments.payment.create', $this->appointment()))->assertOk();
+
+        $salon->update(['plan' => Plan::Professional]);
+        $this->get(route('finance.index'))->assertOk();
     }
 
     public function test_money_parses_brazilian_amounts(): void

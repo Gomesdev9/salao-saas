@@ -13,7 +13,7 @@ Feito com **Laravel 13**, **Blade**, **Tailwind CSS** e **SQLite** no desenvolvi
 - Profissionais: telefone, % de comissão, serviços que cada um faz, ativo/inativo
 - Serviços: categoria, duração, preço, ativo/inativo
 - Clientes: WhatsApp, aniversário, observações, busca por nome ou telefone
-- **Financeiro**: receber o pagamento do atendimento (Pix, dinheiro com troco, débito ou crédito parcelado, com desconto), visão do mês com gráfico, lançamentos de entradas e despesas, e comissões de cada profissional com vales
+- **Financeiro** (planos Profissional e Premium; no Essencial só o receber pagamento): receber o pagamento do atendimento (Pix, dinheiro com troco, débito ou crédito parcelado, com desconto), visão do mês com gráfico, lançamentos de entradas e despesas, e comissões de cada profissional com vales
 - Isolamento entre salões (um salão nunca vê dados de outro)
 - Tudo em português
 

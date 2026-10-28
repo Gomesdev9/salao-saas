@@ -50,6 +50,12 @@ class Salon extends Model
         return $limit === null || $this->activeProfessionalsCount() < $limit;
     }
 
+    /** Durante o teste grátis tudo fica liberado; depois, depende do plano. */
+    public function hasFinance(): bool
+    {
+        return $this->onTrial() || $this->plan->includesFinance();
+    }
+
     /**
      * Gera um slug único a partir do nome, ex.: "Salão da Maria" -> "salao-da-maria-2".
      */

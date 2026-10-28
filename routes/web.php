@@ -12,6 +12,7 @@ use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProfessionalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Middleware\EnsureFinanceInPlan;
 use Illuminate\Support\Facades\Route;
 
 // Página de divulgação do sistema, com o convite para a empresa se cadastrar
@@ -39,8 +40,8 @@ Route::middleware('auth')->group(function () {
     Route::post('agenda/{appointment}/pagamento', [PaymentController::class, 'store'])->name('appointments.payment.store');
     Route::delete('agenda/{appointment}/pagamento', [PaymentController::class, 'destroy'])->name('appointments.payment.destroy');
 
-    // Financeiro (todas as telas aceitam ?mes=2026-10)
-    Route::prefix('financeiro')->name('finance.')->group(function () {
+    // Financeiro (todas as telas aceitam ?mes=2026-10). No plano Essencial, depois do teste, mostra o convite para mudar de plano.
+    Route::prefix('financeiro')->name('finance.')->middleware(EnsureFinanceInPlan::class)->group(function () {
         Route::get('/', [FinanceController::class, 'index'])->name('index');
         Route::get('lancamentos', [FinanceController::class, 'entries'])->name('entries');
         Route::post('despesas', [ExpenseController::class, 'store'])->name('expenses.store');
