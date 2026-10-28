@@ -4,6 +4,10 @@
             @include('profile.partials.update-profile-information-form')
         </div>
 
+        <div id="empresa" class="cartao p-5 sm:p-8">
+            @include('profile.partials.update-salon-form')
+        </div>
+
         <div class="cartao p-5 sm:p-8">
             @include('profile.partials.update-password-form')
         </div>

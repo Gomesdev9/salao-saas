@@ -38,6 +38,24 @@ class ProfileController extends Controller
     }
 
     /**
+     * Dados da empresa: nome e chave Pix (aparece na tela de receber pagamento).
+     */
+    public function updateSalon(Request $request): RedirectResponse
+    {
+        $data = $request->validateWithBag('salon', [
+            'salon_name' => ['required', 'string', 'max:120'],
+            'pix_key' => ['nullable', 'string', 'max:140'],
+        ]);
+
+        $request->user()->salon->update([
+            'name' => $data['salon_name'],
+            'pix_key' => $data['pix_key'] ?? null,
+        ]);
+
+        return Redirect::route('profile.edit')->with('status', 'Dados da empresa salvos.');
+    }
+
+    /**
      * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse

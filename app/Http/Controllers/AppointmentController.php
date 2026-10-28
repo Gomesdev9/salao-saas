@@ -78,6 +78,8 @@ class AppointmentController extends Controller
 
     public function edit(Appointment $appointment): View
     {
+        $appointment->load('payment');
+
         return view('appointments.edit', $this->formData($appointment));
     }
 
@@ -113,6 +115,11 @@ class AppointmentController extends Controller
 
     public function destroy(Appointment $appointment): RedirectResponse
     {
+        // Apagar um horário pago deixaria o dinheiro sem o atendimento de origem
+        if ($appointment->payment()->exists()) {
+            return back()->withErrors(['payment' => 'Este horário já foi pago. Desfaça o pagamento antes de remover.']);
+        }
+
         $day = $appointment->starts_at->toDateString();
         $appointment->delete();
 

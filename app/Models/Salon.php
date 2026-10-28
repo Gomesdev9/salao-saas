@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'slug', 'business_type', 'phone', 'city'])]
+#[Fillable(['name', 'slug', 'business_type', 'phone', 'city', 'pix_key'])]
 class Salon extends Model
 {
     /** @use HasFactory<SalonFactory> */

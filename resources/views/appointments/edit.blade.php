@@ -1,8 +1,18 @@
+@use('App\Support\Money')
+
 @php
     $client = $appointment->client;
+    $payment = $appointment->payment;
+    $canReceive = ! $payment && in_array($appointment->status, \App\Enums\AppointmentStatus::occupying());
 @endphp
 
 <x-page title="Editar agendamento" :back="route('appointments.index', ['data' => $appointment->starts_at->toDateString()])" :back-label="'Voltar para a agenda de '.$appointment->starts_at->format('d/m')">
+    @if ($canReceive)
+        <x-slot name="actions">
+            <x-link-button :href="route('appointments.payment.create', $appointment)" icon="financeiro">Receber pagamento</x-link-button>
+        </x-slot>
+    @endif
+
     {{-- Situação do horário e troca rápida --}}
     <section aria-label="Situação do horário" class="cartao flex flex-wrap items-center gap-3 px-5 py-4">
         <div class="mr-auto flex flex-col gap-0.5">
@@ -24,7 +34,31 @@
             </form>
         @endforeach
         <x-input-error :messages="$errors->get('status')" class="w-full" />
+        <x-input-error :messages="$errors->get('payment')" class="w-full" />
     </section>
+
+    @if ($payment)
+        <section aria-label="Pagamento" class="cartao flex flex-wrap items-center gap-3 px-5 py-4">
+            <span class="selo border-transparent bg-[#E7F4EC] text-[13px] text-[#1C5234]"><x-icon name="check" class="h-3.5 w-3.5" />Pago</span>
+            <span class="mr-auto text-sm">
+                <strong>{{ Money::format($payment->amount) }}</strong> no {{ $payment->method->label() }}{{ $payment->installments > 1 ? " em {$payment->installments}x" : '' }}
+                <span class="text-suave">
+                    · {{ $payment->paid_at->format('d/m') }} às {{ $payment->paid_at->format('H:i') }}
+                    @if ($payment->discount_percent)
+                        · {{ $payment->discount_percent }}% de desconto
+                    @endif
+                    @if ($payment->change() > 0)
+                        · troco de {{ Money::format($payment->change()) }}
+                    @endif
+                </span>
+            </span>
+            <form method="POST" action="{{ route('appointments.payment.destroy', $appointment) }}" onsubmit="return confirm('Desfazer este pagamento? O valor sai dos lançamentos do financeiro.')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="min-h-11 rounded-campo px-3 text-[13px] font-semibold text-suave hover:bg-areia hover:text-perigo">Desfazer pagamento</button>
+            </form>
+        </section>
+    @endif
 
     <div class="flex flex-wrap items-start gap-5">
         <form method="POST" action="{{ route('appointments.update', $appointment) }}" class="cartao min-w-0 flex-[2_1_440px]">
