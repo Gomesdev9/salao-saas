@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AppointmentStatus;
+use App\Models\Appointment;
 use App\Models\Client;
 use App\Models\Professional;
 use App\Models\Salon;
@@ -51,6 +53,32 @@ class DatabaseSeeder extends Seeder
         $ana->services()->attach($services->where('category', 'Cabelo')->pluck('id'));
         $bia->services()->attach($services->whereIn('category', ['Unhas', 'Estética'])->pluck('id'));
 
-        Client::factory(15)->for($salon)->create();
+        $clients = Client::factory(15)->for($salon)->create();
+
+        // Alguns horários marcados para hoje
+        $agenda = [
+            [$ana, 'Corte feminino', '09:00', AppointmentStatus::Done],
+            [$ana, 'Escova', '10:30', AppointmentStatus::Confirmed],
+            [$ana, 'Corte feminino', '14:00', AppointmentStatus::Scheduled],
+            [$bia, 'Manicure', '09:00', AppointmentStatus::Done],
+            [$bia, 'Pedicure', '10:00', AppointmentStatus::NoShow],
+            [$bia, 'Design de sobrancelha', '15:30', AppointmentStatus::Scheduled],
+        ];
+
+        foreach ($agenda as $i => [$professional, $serviceName, $time, $status]) {
+            $service = $services->firstWhere('name', $serviceName);
+            $start = today()->setTimeFromTimeString($time);
+
+            Appointment::create([
+                'salon_id' => $salon->id,
+                'client_id' => $clients[$i]->id,
+                'professional_id' => $professional->id,
+                'service_id' => $service->id,
+                'starts_at' => $start,
+                'ends_at' => $start->copy()->addMinutes($service->duration_minutes),
+                'price' => $service->price,
+                'status' => $status,
+            ]);
+        }
     }
 }
