@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CommissionAdvanceController;
 use App\Http\Controllers\CommissionController;
@@ -17,6 +18,18 @@ use Illuminate\Support\Facades\Route;
 
 // Página de divulgação do sistema, com o convite para a empresa se cadastrar
 Route::view('/', 'site.home')->name('home');
+
+// Página pública de cada empresa, em que a cliente agenda sozinha (ex.: /agendar/studio-bela-vista)
+Route::prefix('agendar/{salon:slug}')->name('booking.')->controller(BookingController::class)->group(function () {
+    Route::get('/', 'service')->name('service');
+    Route::get('horario', 'time')->name('time');
+    Route::get('dados', 'details')->name('details');
+    Route::post('/', 'store')->middleware('throttle:10,1')->name('store');
+    Route::get('meus-horarios/{token}', 'mine')->name('mine');
+    Route::get('meus-horarios/{token}/{appointment}', 'done')->whereNumber('appointment')->name('done');
+    Route::get('meus-horarios/{token}/{appointment}/calendario', 'calendar')->whereNumber('appointment')->name('calendar');
+    Route::patch('meus-horarios/{token}/{appointment}/cancelar', 'cancel')->whereNumber('appointment')->name('cancel');
+});
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 

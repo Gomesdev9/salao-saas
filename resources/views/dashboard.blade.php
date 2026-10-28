@@ -59,6 +59,33 @@
         </section>
 
         <div class="flex min-w-0 flex-[1_1_280px] flex-col gap-5">
+            {{-- Link da página em que a cliente agenda sozinha --}}
+            @php
+                $salon = Auth::user()->salon;
+            @endphp
+            <section class="flex flex-col gap-3 rounded-cartao bg-tinta px-5 py-4 text-creme shadow-menu">
+                <div class="flex items-center gap-2.5">
+                    <span class="flex h-9 w-9 items-center justify-center rounded-full bg-menu-ativo text-[#D9A57F]"><x-icon name="link" class="h-[18px] w-[18px]" /></span>
+                    <h2 class="font-sans text-[17px] font-bold">Agendamento online</h2>
+                </div>
+                @if ($salon->hasOnlineBooking())
+                    <p class="text-sm text-menu-texto">Mande este link para as clientes marcarem sozinhas. Os horários caem direto na agenda como “Agendado”.</p>
+                    <span class="truncate rounded-campo bg-menu-ativo px-3 py-2.5 text-[13px] text-menu-texto">{{ $salon->bookingUrl() }}</span>
+                    <div class="grid grid-cols-2 gap-2" x-data="{ copied: false }">
+                        <button type="button" class="inline-flex h-11 items-center justify-center rounded-full bg-pele text-sm font-semibold text-tinta hover:bg-white"
+                                @click="navigator.clipboard.writeText(@js($salon->bookingUrl())); copied = true; setTimeout(() => copied = false, 2000)"
+                                x-text="copied ? 'Copiado!' : 'Copiar link'">Copiar link</button>
+                        <a href="{{ $salon->bookingUrl() }}" target="_blank" rel="noopener" class="inline-flex h-11 items-center justify-center rounded-full border border-menu-suave text-sm font-semibold hover:bg-menu-ativo">Abrir</a>
+                    </div>
+                    @unless ($salon->plan->includesOnlineBooking())
+                        <p class="text-xs text-menu-suave">No plano {{ $salon->plan->label() }}, o link funciona até o fim do teste grátis.</p>
+                    @endunless
+                @else
+                    <p class="text-sm text-menu-texto">Deixe as clientes marcarem sozinhas por um link da sua empresa. Faz parte dos planos Profissional e Premium.</p>
+                    <a href="{{ route('plan.edit') }}" class="inline-flex h-11 items-center justify-center rounded-full bg-pele text-sm font-semibold text-tinta hover:bg-white">Ver planos</a>
+                @endif
+            </section>
+
             <section class="cartao flex flex-col gap-3.5 px-5 py-4">
                 <h2 class="text-[17px] font-bold">Aniversariantes da semana</h2>
                 @forelse ($birthdays as $client)

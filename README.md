@@ -14,6 +14,7 @@ Feito com **Laravel 13**, **Blade**, **Tailwind CSS** e **SQLite** no desenvolvi
 - Serviços: categoria, duração, preço, ativo/inativo
 - Clientes: WhatsApp, aniversário, observações, busca por nome ou telefone
 - **Financeiro** (planos Profissional e Premium; no Essencial só o receber pagamento): receber o pagamento do atendimento (Pix, dinheiro com troco, débito ou crédito parcelado, com desconto), visão do mês com gráfico, lançamentos de entradas e despesas, e comissões de cada profissional com vales
+- **Agendamento online** (planos Profissional e Premium, e qualquer plano no teste grátis): cada empresa tem a página `/agendar/{slug}`, em que a cliente escolhe o procedimento, o profissional (ou "sem preferência"), o dia e um horário livre, informa nome e WhatsApp e confirma. O horário cai na agenda como "Agendado". Em "Meus horários" ela remarca, cancela ou agenda de novo, pelo link que fica guardado no aparelho. O horário de funcionamento é fixo por enquanto (seg a sex 9h–19h, sáb 9h–14h), em `Salon::openingHours()`
 - Isolamento entre salões (um salão nunca vê dados de outro)
 - Tudo em português
 
