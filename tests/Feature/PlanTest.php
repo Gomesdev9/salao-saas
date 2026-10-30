@@ -7,6 +7,7 @@ use App\Models\Professional;
 use App\Models\Salon;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class PlanTest extends TestCase
@@ -82,7 +83,9 @@ class PlanTest extends TestCase
         $ana = Professional::where('name', 'Ana')->first();
         $this->put(route('professionals.update', $ana), ['name' => 'Ana Souza', 'commission_percent' => 45, 'active' => 1])->assertSessionHasNoErrors();
 
-        $this->get(route('professionals.create'))->assertOk()->assertSee('mudar de plano');
+        $this->get(route('professionals.create'))->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('canActivate', false)
+            ->where('planLimit', 'O plano Essencial permite até 2 profissionais ativos, e a sua equipe já chegou nesse número.'));
     }
 
     public function test_other_companies_professionals_do_not_count_for_the_limit(): void

@@ -39,14 +39,14 @@ class SalonRecordsTest extends TestCase
 
         $service = Service::firstOrFail();
         $this->assertSame('49.90', $service->price);
-        $this->get(route('services.index'))->assertSee('R$ 49,90');
+        $this->get(route('services.index'))->assertInertia(fn (Assert $page) => $page->where('groups.0.services.0.price', 49.9));
 
         $this->put(route('services.update', $service), [
             'name' => 'Escova longa', 'duration_minutes' => 60, 'price' => 60, 'active' => '0',
         ])->assertRedirect(route('services.index'));
         $this->assertFalse($service->fresh()->active);
 
-        $this->get(route('services.edit', $service))->assertOk()->assertSee('Escova longa');
+        $this->get(route('services.edit', $service))->assertOk()->assertInertia(fn (Assert $page) => $page->component('services/form')->where('service.name', 'Escova longa'));
 
         $this->delete(route('services.destroy', $service));
         $this->assertModelMissing($service);
