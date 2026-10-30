@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, LabelHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import type { ComponentProps, InputHTMLAttributes, LabelHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { cx } from '@/lib/format';
 
 export function InputLabel({ value, className, children, ...props }: LabelHTMLAttributes<HTMLLabelElement> & { value?: ReactNode }) {
@@ -25,7 +25,7 @@ export function InputError({ message, className }: { message?: string | string[]
     );
 }
 
-export function TextInput({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+export function TextInput({ className, ...props }: ComponentProps<'input'>) {
     return <input {...props} className={cx('campo', className)} />;
 }
 

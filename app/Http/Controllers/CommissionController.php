@@ -13,7 +13,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 /**
  * Comissões do mês: o que cada profissional tem a receber, descontando os vales.
@@ -22,20 +23,36 @@ class CommissionController extends Controller
 {
     use ResolvesMonth;
 
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $month = $this->month($request);
         $rows = $this->rows($month);
 
-        return view('finance.commissions', [
-            'month' => $month,
-            'rows' => $rows,
+        return Inertia::render('finance/commissions', [
+            'month' => $this->monthProps($month),
+            'rows' => $rows->map(fn (array $row) => [
+                ...$row,
+                'professional' => [
+                    'id' => $row['professional']->id,
+                    'name' => $row['professional']->name,
+                    // 40,00 vira "40%" e 12,50 vira "12,5%"
+                    'percent' => rtrim(rtrim(number_format($row['professional']->commission_percent, 2, ',', '.'), '0'), ',').'%',
+                ],
+            ]),
             'advances' => CommissionAdvance::with('professional')
                 ->whereBetween('given_on', [$month, $month->copy()->endOfMonth()])
                 ->orderBy('given_on')
-                ->get(),
-            'professionals' => Professional::where('active', true)->orderBy('name')->get(),
-            'methods' => [PaymentMethod::Pix, PaymentMethod::Cash],
+                ->get()
+                ->map(fn (CommissionAdvance $advance) => [
+                    'id' => $advance->id,
+                    'date' => $advance->given_on->format('d/m'),
+                    'professional' => $advance->professional->name,
+                    'method' => $advance->method->label(),
+                    'amount' => (float) $advance->amount,
+                ]),
+            'professionals' => Professional::where('active', true)->orderBy('name')->get(['id', 'name']),
+            'methods' => array_map(fn (PaymentMethod $method) => ['value' => $method->value, 'label' => $method->label()], [PaymentMethod::Pix, PaymentMethod::Cash]),
+            'defaultDate' => ($month->isSameMonth(today()) ? today() : $month)->toDateString(),
         ]);
     }
 

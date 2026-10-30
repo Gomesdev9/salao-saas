@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Support\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 /**
@@ -59,8 +60,11 @@ class FinanceTest extends TestCase
 
         $this->get(route('appointments.payment.create', $appointment))
             ->assertOk()
-            ->assertSee('Receber pagamento')
-            ->assertSee('Comissão de Ana Souza (40%)');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('payments/create')
+                ->where('appointment.professional', 'Ana Souza')
+                ->where('appointment.price', 120)
+                ->where('commission.label', '40%'));
 
         $this->post(route('appointments.payment.store', $appointment), [
             'method' => 'cash',
@@ -77,9 +81,10 @@ class FinanceTest extends TestCase
         $this->assertSame("{$appointment->client->name} — {$appointment->service->name}", $payment->description);
 
         $this->get(route('appointments.edit', $appointment))
-            ->assertSee('Pago')
-            ->assertSee('troco de R$ 42,00')
-            ->assertDontSee('Receber pagamento');
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('payment.amount', 'R$ 108,00')
+                ->where('payment.change', 'R$ 42,00')
+                ->where('summary.canReceive', false));
     }
 
     public function test_cash_received_must_cover_the_total(): void
@@ -134,20 +139,23 @@ class FinanceTest extends TestCase
 
         $this->get(route('finance.index'))
             ->assertOk()
-            ->assertSee('Outubro de 2026')
-            ->assertSee('R$ 400,00')            // recebido
-            ->assertSee('2 atendimentos · média R$ 200,00')
-            ->assertSee('R$ 200,00')            // despesas
-            ->assertSee('R$ 150,00 ainda a vencer')
-            ->assertSee('R$ 160,00')            // comissões
-            ->assertSee('R$ 40,00')             // lucro: 400 − 200 − 160
-            ->assertSee('Cartão de crédito')
-            ->assertSee('Aluguel')
-            ->assertDontSee('R$ 999,00')
-            ->assertDontSee('R$ 777,00');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('finance/index')
+                ->where('title', 'Outubro de 2026')
+                ->where('received', 400)
+                ->where('paymentsCount', 2)
+                ->where('expensesTotal', 200)
+                ->where('expensesOpen', 150)
+                ->where('commissions', 160)
+                ->where('profit', 40)             // 400 − 200 − 160
+                ->where('byMethod.1.label', 'Cartão de crédito')
+                ->where('bills.0.description', 'Aluguel')
+                ->has('chart.days', 21));         // até hoje, dia 21
 
-        $this->get(route('finance.index', ['mes' => '2026-09']))->assertSee('Setembro de 2026')->assertSee('R$ 999,00');
-        $this->get(route('finance.index', ['mes' => 'abc']))->assertOk()->assertSee('Outubro de 2026');
+        $this->get(route('finance.index', ['mes' => '2026-09']))
+            ->assertInertia(fn (Assert $page) => $page->where('title', 'Setembro de 2026')->where('received', 999));
+        $this->get(route('finance.index', ['mes' => 'abc']))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('title', 'Outubro de 2026'));
     }
 
     public function test_entries_list_payments_and_expenses_with_filter_and_search(): void
@@ -159,15 +167,22 @@ class FinanceTest extends TestCase
 
         $this->get(route('finance.entries'))
             ->assertOk()
-            ->assertSee('+ R$ 220,00')
-            ->assertSee('− R$ 870,00')
-            ->assertSee('− R$ 650,00')          // saldo
-            ->assertSeeInOrder(['Contador', 'Juliana Alves', 'Energia elétrica'])
-            ->assertSee('A vencer');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('finance/entries')
+                ->where('incoming', 220)
+                ->where('outgoing', 870)
+                ->where('rows.data.0.description', 'Contador')
+                ->where('rows.data.0.amount', -450)
+                ->where('rows.data.0.status.0', 'A vencer')
+                ->where('rows.data.1.description', 'Juliana Alves — Coloração')
+                ->where('rows.data.2.description', 'Energia elétrica'));
 
-        $this->get(route('finance.entries', ['tipo' => 'entradas']))->assertSee('Juliana Alves')->assertDontSee('Contador');
-        $this->get(route('finance.entries', ['tipo' => 'saidas']))->assertSee('Contador')->assertDontSee('Juliana Alves');
-        $this->get(route('finance.entries', ['busca' => 'energia']))->assertSee('Energia elétrica')->assertDontSee('Contador');
+        $this->get(route('finance.entries', ['tipo' => 'entradas']))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 1)->where('rows.data.0.description', 'Juliana Alves — Coloração'));
+        $this->get(route('finance.entries', ['tipo' => 'saidas']))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 2)->where('rows.data.0.description', 'Contador'));
+        $this->get(route('finance.entries', ['busca' => 'energia']))
+            ->assertInertia(fn (Assert $page) => $page->has('rows.data', 1)->where('rows.data.0.description', 'Energia elétrica'));
     }
 
     public function test_expense_can_be_created_paid_and_removed(): void
@@ -204,20 +219,26 @@ class FinanceTest extends TestCase
 
         $this->get(route('finance.commissions'))
             ->assertOk()
-            ->assertSee('R$ 750,00')       // faturado
-            ->assertSee('R$ 300,00')       // comissão
-            ->assertSee('− R$ 50,00')      // vale
-            ->assertSee('R$ 250,00')       // a pagar
-            ->assertSee('Marcar como pago');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('finance/commissions')
+                ->where('rows.0.professional.name', 'Ana Souza')
+                ->where('rows.0.billed', 750)
+                ->where('rows.0.commission', 300)
+                ->where('rows.0.advance', 50)
+                ->where('rows.0.due', 250)
+                ->where('rows.0.remaining', 250)
+                ->where('advances.0.amount', 50));
 
         $this->post(route('finance.commissions.pay', $ana), ['mes' => '2026-10'])->assertSessionHasNoErrors();
         $this->assertDatabaseHas('commission_payouts', ['professional_id' => $ana->id, 'amount' => 250]);
 
-        $this->get(route('finance.commissions'))->assertDontSee('Marcar como pago')->assertSee('Desfazer');
+        $this->get(route('finance.commissions'))
+            ->assertInertia(fn (Assert $page) => $page->where('rows.0.paid', 250)->where('rows.0.remaining', 0));
         $this->post(route('finance.commissions.pay', $ana), ['mes' => '2026-10'])->assertSessionHasErrors('payout');
 
         $this->delete(route('finance.commissions.unpay', $ana), ['mes' => '2026-10']);
-        $this->get(route('finance.commissions'))->assertSee('Marcar como pago');
+        $this->get(route('finance.commissions'))
+            ->assertInertia(fn (Assert $page) => $page->where('rows.0.paid', 0)->where('rows.0.remaining', 250));
     }
 
     public function test_another_salons_finance_records_are_out_of_reach(): void
@@ -249,7 +270,8 @@ class FinanceTest extends TestCase
         $this->get(route('profile.edit'))->assertSee('Dados da empresa salvos.');
         $this->assertSame('11.222.333/0001-44', $this->user->salon->fresh()->pix_key);
 
-        $this->get(route('appointments.payment.create', $this->appointment()))->assertSee('11.222.333/0001-44');
+        $this->get(route('appointments.payment.create', $this->appointment()))
+            ->assertInertia(fn (Assert $page) => $page->where('pixKey', '11.222.333/0001-44'));
 
         // O código interno do Breeze não aparece como aviso
         $this->patch(route('profile.update'), ['name' => 'João', 'email' => $this->user->email]);
@@ -261,10 +283,11 @@ class FinanceTest extends TestCase
         $salon = $this->user->salon;
 
         $salon->update(['plan' => Plan::Essential, 'trial_ends_at' => now()->addDays(3)]);
-        $this->get(route('finance.index'))->assertOk()->assertSee('Recebido');
+        $this->get(route('finance.index'))->assertOk()->assertInertia(fn (Assert $page) => $page->component('finance/index'));
 
         $salon->update(['trial_ends_at' => now()->subDay()]);
-        $this->get(route('finance.index'))->assertForbidden()->assertSee('O Financeiro faz parte dos planos Profissional e Premium');
+        $this->get(route('finance.index'))->assertForbidden()
+            ->assertInertia(fn (Assert $page) => $page->component('finance/upgrade')->where('plan', 'Essencial'));
         $this->post(route('finance.expenses.store'), ['description' => 'Luz', 'category' => 'Contas da casa', 'amount' => '10', 'due_date' => '2026-10-21'])
             ->assertForbidden();
         $this->assertSame(0, Expense::count());
