@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Enums\BusinessType;
 use App\Enums\Plan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -22,12 +23,12 @@ class RegistrationTest extends TestCase
     {
         $this->get('/register?plano=premium')
             ->assertOk()
-            ->assertSee('value="premium" checked', false);
+            ->assertInertia(fn (Assert $page) => $page->component('auth/register')->where('selectedPlan', 'premium'));
 
         // Sem plano (ou com um plano que não existe) fica marcado o mais indicado
         $this->get('/register?plano=ouro')
             ->assertOk()
-            ->assertSee('value="profissional" checked', false);
+            ->assertInertia(fn (Assert $page) => $page->where('selectedPlan', 'profissional'));
     }
 
     public function test_owners_can_register_their_company(): void
