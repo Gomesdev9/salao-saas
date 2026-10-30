@@ -267,15 +267,18 @@ class FinanceTest extends TestCase
         $this->patch(route('profile.salon'), ['salon_name' => 'Studio Bela Vista', 'pix_key' => '11.222.333/0001-44'])
             ->assertRedirect(route('profile.edit'));
 
-        $this->get(route('profile.edit'))->assertSee('Dados da empresa salvos.');
+        $this->get(route('profile.edit'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('flash.status', 'Dados da empresa salvos.')
+                ->where('salon.pix_key', '11.222.333/0001-44'));
         $this->assertSame('11.222.333/0001-44', $this->user->salon->fresh()->pix_key);
 
         $this->get(route('appointments.payment.create', $this->appointment()))
             ->assertInertia(fn (Assert $page) => $page->where('pixKey', '11.222.333/0001-44'));
 
-        // O código interno do Breeze não aparece como aviso
+        // O código interno do Breeze chega como código; a tela mostra "Salvo." no lugar (components/Flash.tsx)
         $this->patch(route('profile.update'), ['name' => 'João', 'email' => $this->user->email]);
-        $this->get(route('profile.edit'))->assertDontSee('profile-updated');
+        $this->get(route('profile.edit'))->assertInertia(fn (Assert $page) => $page->where('flash.status', 'profile-updated'));
     }
 
     public function test_essential_plan_sees_upgrade_invite_after_trial(): void

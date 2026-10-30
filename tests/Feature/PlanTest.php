@@ -41,10 +41,14 @@ class PlanTest extends TestCase
 
         $this->get(route('plan.edit'))
             ->assertOk()
-            ->assertSeeText('Essencial · R$ 49,90/mês')
-            ->assertSee('faltam')
-            ->assertSee('1 de 2')
-            ->assertSee('Mudar para o Premium');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('plan/edit')
+                ->where('current', 'essencial')
+                ->where('trial.daysLeft', 14)
+                ->where('activeProfessionals', 1)
+                ->where('plans.0.formattedPrice', 'R$ 49,90')
+                ->where('plans.0.professionalLimit', 2)
+                ->where('plans.2.label', 'Premium'));
     }
 
     public function test_owner_can_change_plan(): void
