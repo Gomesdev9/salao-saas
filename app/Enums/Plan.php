@@ -76,6 +76,35 @@ enum Plan: string
     }
 
     /**
+     * Dados para as telas em React (cartão do plano na página de divulgação e em "Meu plano").
+     *
+     * @return array{value: string, label: string, description: string, price: float, formattedPrice: string, highlighted: bool, professionalLimit: ?int, features: list<array{text: string, soon: bool}>}
+     */
+    public function toProps(): array
+    {
+        return [
+            'value' => $this->value,
+            'label' => $this->label(),
+            'description' => $this->description(),
+            'price' => $this->price(),
+            'formattedPrice' => $this->formattedPrice(),
+            'highlighted' => $this->isHighlighted(),
+            'professionalLimit' => $this->professionalLimit(),
+            'features' => $this->features(),
+        ];
+    }
+
+    /**
+     * Todos os planos, prontos para as telas.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function allProps(): array
+    {
+        return array_map(fn (self $plan) => $plan->toProps(), self::cases());
+    }
+
+    /**
      * O que o plano inclui. "soon" marca o que ainda vai chegar no sistema.
      *
      * @return list<array{text: string, soon: bool}>

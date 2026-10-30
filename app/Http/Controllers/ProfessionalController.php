@@ -9,11 +9,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ProfessionalController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $showInactive = $request->boolean('inativos');
 
@@ -26,23 +27,34 @@ class ProfessionalController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('professionals.index', [
-            'professionals' => $professionals,
+        return Inertia::render('professionals/index', [
+            'professionals' => $professionals->map(fn (Professional $professional) => [
+                'id' => $professional->id,
+                'name' => $professional->name,
+                'phone' => $professional->phone,
+                'active' => $professional->active,
+                // 40,00 vira "40" e 12,50 vira "12,5"
+                'commission' => rtrim(rtrim(number_format($professional->commission_percent, 2, ',', ''), '0'), ','),
+                'todayCount' => $professional->today_count,
+                'services' => $professional->services->pluck('name'),
+            ]),
             'showInactive' => $showInactive,
             'activeCount' => Professional::where('active', true)->count(),
             'inactiveCount' => Professional::where('active', false)->count(),
         ]);
     }
 
-    public function create(Request $request): View
+    public function create(Request $request): Response
     {
         // No limite do plano, o formulário já vem com "inativo" marcado
-        $canActivate = $request->user()->salon->canActivateProfessional();
+        $salon = $request->user()->salon;
+        $canActivate = $salon->canActivateProfessional();
 
-        return view('professionals.create', [
-            'professional' => new Professional(['active' => $canActivate, 'commission_percent' => 0]),
-            'services' => Service::orderBy('name')->get(),
+        return Inertia::render('professionals/form', [
+            'professional' => null,
+            'services' => Service::orderBy('name')->get(['id', 'name']),
             'canActivate' => $canActivate,
+            'planLimit' => $canActivate ? null : "O plano {$salon->plan->label()} permite até {$salon->plan->professionalLimit()} profissionais ativos, e a sua equipe já chegou nesse número.",
         ]);
     }
 
@@ -57,11 +69,20 @@ class ProfessionalController extends Controller
         return redirect()->route('professionals.index')->with('status', 'Profissional cadastrado.');
     }
 
-    public function edit(Professional $professional): View
+    public function edit(Professional $professional): Response
     {
-        return view('professionals.edit', [
-            'professional' => $professional->load('services'),
-            'services' => Service::orderBy('name')->get(),
+        return Inertia::render('professionals/form', [
+            'professional' => [
+                'id' => $professional->id,
+                'name' => $professional->name,
+                'phone' => $professional->phone,
+                'commission_percent' => (float) $professional->commission_percent,
+                'active' => $professional->active,
+                'services' => $professional->services()->pluck('services.id'),
+            ],
+            'services' => Service::orderBy('name')->get(['id', 'name']),
+            'canActivate' => true,
+            'planLimit' => null,
         ]);
     }
 

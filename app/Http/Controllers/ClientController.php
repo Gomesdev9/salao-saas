@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ClientController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $search = trim((string) $request->query('busca'));
 
@@ -22,16 +23,32 @@ class ClientController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('clients.index', [
-            'clients' => $clients,
+        return Inertia::render('clients/index', [
+            'clients' => [
+                'data' => $clients->getCollection()->map(fn (Client $client) => [
+                    'id' => $client->id,
+                    'name' => $client->name,
+                    'whatsapp' => $client->whatsapp,
+                    'whatsappUrl' => $client->whatsappUrl(),
+                    'birthday' => $client->birthday?->format('d/m'),
+                    'birthdaySoon' => $client->hasBirthdayWithin(7),
+                    'notes' => $client->notes,
+                ]),
+                'from' => $clients->firstItem(),
+                'to' => $clients->lastItem(),
+                'total' => $clients->total(),
+                'currentPage' => $clients->currentPage(),
+                'prevUrl' => $clients->previousPageUrl(),
+                'nextUrl' => $clients->nextPageUrl(),
+            ],
             'search' => $search,
             'total' => Client::count(),
         ]);
     }
 
-    public function create(): View
+    public function create(): Response
     {
-        return view('clients.create', ['client' => new Client()]);
+        return Inertia::render('clients/form', ['client' => null]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -41,9 +58,17 @@ class ClientController extends Controller
         return redirect()->route('clients.index')->with('status', 'Cliente cadastrado.');
     }
 
-    public function edit(Client $client): View
+    public function edit(Client $client): Response
     {
-        return view('clients.edit', compact('client'));
+        return Inertia::render('clients/form', [
+            'client' => [
+                'id' => $client->id,
+                'name' => $client->name,
+                'whatsapp' => $client->whatsapp,
+                'birthday' => $client->birthday?->format('Y-m-d'),
+                'notes' => $client->notes,
+            ],
+        ]);
     }
 
     public function update(Request $request, Client $client): RedirectResponse

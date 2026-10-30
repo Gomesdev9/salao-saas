@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Service;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ServiceController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $category = $request->query('categoria');
         $services = Service::orderBy('name')->get();
@@ -20,17 +21,28 @@ class ServiceController extends Controller
             ->toBase()
             ->sortKeys();
 
-        return view('services.index', [
+        return Inertia::render('services/index', [
             'categories' => $groups->keys(),
             'category' => $groups->has($category) ? $category : null,
-            'groups' => $groups->has($category) ? $groups->only($category) : $groups,
+            'groups' => ($groups->has($category) ? $groups->only($category) : $groups)
+                ->map(fn ($services, $name) => [
+                    'name' => $name,
+                    'services' => $services->map(fn (Service $service) => [
+                        'id' => $service->id,
+                        'name' => $service->name,
+                        'duration_minutes' => $service->duration_minutes,
+                        'price' => (float) $service->price,
+                        'active' => $service->active,
+                    ])->values(),
+                ])
+                ->values(),
         ]);
     }
 
-    public function create(): View
+    public function create(): Response
     {
-        return view('services.create', [
-            'service' => new Service(['active' => true, 'duration_minutes' => 30]),
+        return Inertia::render('services/form', [
+            'service' => null,
             'categories' => $this->categories(),
         ]);
     }
@@ -42,10 +54,10 @@ class ServiceController extends Controller
         return redirect()->route('services.index')->with('status', 'Serviço cadastrado.');
     }
 
-    public function edit(Service $service): View
+    public function edit(Service $service): Response
     {
-        return view('services.edit', [
-            'service' => $service,
+        return Inertia::render('services/form', [
+            'service' => $service->only(['id', 'name', 'category', 'duration_minutes', 'price', 'active']),
             'categories' => $this->categories(),
         ]);
     }

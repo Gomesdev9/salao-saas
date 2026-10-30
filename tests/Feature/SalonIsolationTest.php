@@ -7,6 +7,7 @@ use App\Models\Professional;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 /**
@@ -27,8 +28,10 @@ class SalonIsolationTest extends TestCase
         $this->actingAs($maria)
             ->get(route('clients.index'))
             ->assertOk()
-            ->assertSee('Cliente da Maria')
-            ->assertDontSee('Cliente do João');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('clients/index')
+                ->has('clients.data', 1)
+                ->where('clients.data.0.name', 'Cliente da Maria'));
     }
 
     public function test_cannot_open_or_change_records_from_another_salon(): void

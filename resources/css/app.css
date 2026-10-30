@@ -37,7 +37,3 @@
         @apply flex shrink-0 items-center justify-center rounded-full bg-pele font-bold text-cafe-escuro;
     }
 }
-
-[x-cloak] {
-    display: none !important;
-}
