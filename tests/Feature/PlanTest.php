@@ -30,9 +30,10 @@ class PlanTest extends TestCase
 
         $this->get(route('home'))
             ->assertOk()
-            ->assertSeeInOrder(['Essencial', '49,90', 'Profissional', '89,90', 'Premium', '149,90'])
-            ->assertSee('Mais escolhido')
-            ->assertSee(route('register', ['plano' => 'premium']), false);
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('plans.0.label', 'Essencial')->where('plans.0.formattedPrice', 'R$ 49,90')
+                ->where('plans.1.label', 'Profissional')->where('plans.1.formattedPrice', 'R$ 89,90')->where('plans.1.highlighted', true)
+                ->where('plans.2.label', 'Premium')->where('plans.2.formattedPrice', 'R$ 149,90'));
     }
 
     public function test_plan_page_shows_current_plan_trial_and_usage(): void
