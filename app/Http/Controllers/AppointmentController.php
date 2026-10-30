@@ -7,12 +7,15 @@ use App\Models\Appointment;
 use App\Models\Client;
 use App\Models\Professional;
 use App\Models\Service;
+use App\Support\Money;
+use Carbon\CarbonInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class AppointmentController extends Controller
 {
@@ -24,7 +27,7 @@ class AppointmentController extends Controller
     /**
      * Agenda do dia: uma coluna por profissional no computador e uma lista (com filtro por profissional) no celular.
      */
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $day = $this->parseDay($request->query('data'));
 
@@ -42,29 +45,72 @@ class AppointmentController extends Controller
         $startHour = min(self::DAY_START_HOUR, $appointments->min(fn ($a) => $a->starts_at->hour) ?? self::DAY_START_HOUR);
         $endHour = max(self::DAY_END_HOUR, $appointments->max(fn ($a) => $a->ends_at->isSameDay($day) ? (int) ceil($a->ends_at->hour + $a->ends_at->minute / 60) : 24) ?? self::DAY_END_HOUR);
 
-        return view('appointments.index', [
-            'day' => $day,
-            'appointments' => $appointments->groupBy('professional_id'),
-            'dayList' => $appointments,
-            'professionalFilter' => $professionals->firstWhere('id', $request->integer('profissional')),
-            'professionals' => $professionals->load('services'),
+        $gridStart = $day->copy()->setTime($startHour, 0);
+        $byProfessional = $appointments->countBy('professional_id');
+        $weekStart = $day->copy()->startOfWeek(CarbonInterface::MONDAY);
+
+        return Inertia::render('appointments/index', [
+            'day' => [
+                'date' => $day->toDateString(),
+                'isToday' => $day->isToday(),
+                // Celular: "Terça, 3 de novembro". Computador: "Terça-feira, 03 de novembro"
+                'short' => str($day->translatedFormat('l'))->before('-')->ucfirst().', '.$day->translatedFormat('j \\d\\e F'),
+                'long' => ucfirst($day->translatedFormat('l, d \\d\\e F')),
+                'previous' => $day->copy()->subDay()->toDateString(),
+                'next' => $day->copy()->addDay()->toDateString(),
+            ],
+            'week' => collect(range(0, 6))->map(fn (int $i) => $weekStart->copy()->addDays($i))->map(fn (Carbon $weekDay) => [
+                'date' => $weekDay->toDateString(),
+                'weekday' => ucfirst($weekDay->translatedFormat('D')),
+                'day' => $weekDay->day,
+            ]),
+            'appointments' => $appointments->map(fn (Appointment $appointment) => [
+                'id' => $appointment->id,
+                'professionalId' => $appointment->professional_id,
+                'time' => $appointment->starts_at->format('H:i'),
+                'client' => $appointment->client->name,
+                'service' => $appointment->service->name,
+                'professional' => strtok($appointment->professional->name, ' '),
+                'price' => (float) $appointment->price,
+                'status' => $appointment->status->toProps(),
+                'canceled' => $appointment->status === AppointmentStatus::Canceled,
+                // Hoje, a lista do celular começa no "Agora"
+                'upcoming' => $appointment->starts_at->isAfter(now()),
+                // Posição na grade do computador, em minutos desde a primeira hora
+                'offset' => (int) $gridStart->diffInMinutes($appointment->starts_at),
+                'minutes' => (int) $appointment->starts_at->diffInMinutes($appointment->ends_at),
+            ]),
+            'filterId' => $professionals->firstWhere('id', $request->integer('profissional'))?->id,
+            'professionals' => $professionals->load('services')->map(fn (Professional $professional) => [
+                'id' => $professional->id,
+                'name' => $professional->name,
+                'firstName' => strtok($professional->name, ' '),
+                'area' => $professional->area(),
+                'count' => $byProfessional->get($professional->id, 0),
+            ]),
+            'statuses' => array_map(fn (AppointmentStatus $status) => $status->toProps(), AppointmentStatus::cases()),
             'startHour' => $startHour,
             'endHour' => $endHour,
-            'total' => $appointments->whereIn('status', AppointmentStatus::occupying())->sum('price'),
+            'now' => [
+                'time' => now()->format('H:i'),
+                // Linha da hora atual na grade (só hoje e dentro do horário mostrado)
+                'offset' => $day->isToday() && now()->hour >= $startHour && now()->hour < $endHour ? (int) $gridStart->diffInMinutes(now()) : null,
+            ],
+            'total' => (float) $appointments->whereIn('status', AppointmentStatus::occupying())->sum('price'),
             'count' => $appointments->whereIn('status', AppointmentStatus::occupying())->count(),
             'doneCount' => $appointments->where('status', AppointmentStatus::Done)->count(),
             'missedCount' => $appointments->whereIn('status', [AppointmentStatus::NoShow, AppointmentStatus::Canceled])->count(),
         ]);
     }
 
-    public function create(Request $request): View
+    public function create(Request $request): Response
     {
         $appointment = new Appointment([
             'professional_id' => $request->integer('profissional') ?: null,
             'starts_at' => $this->parseDay($request->query('data'))->setTimeFromTimeString($request->query('hora', '09:00')),
         ]);
 
-        return view('appointments.create', $this->formData($appointment));
+        return Inertia::render('appointments/form', $this->formData($appointment));
     }
 
     public function store(Request $request): RedirectResponse
@@ -76,11 +122,37 @@ class AppointmentController extends Controller
             ->with('status', 'Horário agendado.');
     }
 
-    public function edit(Appointment $appointment): View
+    public function edit(Appointment $appointment): Response
     {
-        $appointment->load('payment');
+        $appointment->load(['payment', 'client']);
+        $payment = $appointment->payment;
+        $client = $appointment->client;
 
-        return view('appointments.edit', $this->formData($appointment));
+        return Inertia::render('appointments/form', [
+            ...$this->formData($appointment),
+            'summary' => [
+                'when' => $appointment->starts_at->format('d/m').' · '.$appointment->starts_at->format('H:i').'–'.$appointment->ends_at->format('H:i'),
+                'price' => (float) $appointment->price,
+                'end' => $appointment->ends_at->format('H:i'),
+                'status' => $appointment->status->toProps(),
+                'canReceive' => ! $payment && in_array($appointment->status, AppointmentStatus::occupying()),
+            ],
+            'payment' => $payment ? [
+                'amount' => Money::format($payment->amount),
+                'method' => $payment->method->label(),
+                'installments' => $payment->installments,
+                'paidAt' => $payment->paid_at->format('d/m').' às '.$payment->paid_at->format('H:i'),
+                'discountPercent' => $payment->discount_percent,
+                'change' => $payment->change() > 0 ? Money::format($payment->change()) : null,
+            ] : null,
+            'client' => [
+                'id' => $client->id,
+                'name' => $client->name,
+                'birthday' => $client->birthday?->format('d/m'),
+                'whatsappUrl' => $client->whatsappUrl(),
+                'notes' => $client->notes,
+            ],
+        ]);
     }
 
     public function update(Request $request, Appointment $appointment): RedirectResponse
@@ -129,11 +201,27 @@ class AppointmentController extends Controller
     private function formData(Appointment $appointment): array
     {
         return [
-            'appointment' => $appointment,
+            'appointment' => [
+                'id' => $appointment->id,
+                'client_id' => $appointment->client_id,
+                'professional_id' => $appointment->professional_id,
+                'service_id' => $appointment->service_id,
+                'date' => $appointment->starts_at->format('Y-m-d'),
+                'time' => $appointment->starts_at->format('H:i'),
+                'status' => $appointment->status?->value,
+                'notes' => $appointment->notes,
+            ],
             'clients' => Client::orderBy('name')->get(['id', 'name', 'whatsapp']),
-            'professionals' => Professional::where('active', true)->orWhere('id', $appointment->professional_id)->orderBy('name')->get(),
-            'services' => Service::where('active', true)->orWhere('id', $appointment->service_id)->orderBy('name')->get(),
-            'statuses' => AppointmentStatus::cases(),
+            'professionals' => Professional::where('active', true)->orWhere('id', $appointment->professional_id)->orderBy('name')->get(['id', 'name']),
+            'services' => Service::where('active', true)->orWhere('id', $appointment->service_id)->orderBy('name')->get(['id', 'name', 'duration_minutes', 'price'])
+                ->map(fn (Service $service) => [
+                    'id' => $service->id,
+                    'label' => "{$service->name} ({$service->duration_minutes} min · ".Money::format($service->price).')',
+                ]),
+            'statuses' => array_map(fn (AppointmentStatus $status) => $status->toProps(), AppointmentStatus::cases()),
+            'summary' => null,
+            'payment' => null,
+            'client' => null,
         ];
     }
 

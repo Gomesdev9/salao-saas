@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Testing\TestResponse;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 /**
@@ -245,8 +246,9 @@ class BookingTest extends TestCase
 
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee(route('booking.service', $this->salon))
-            ->assertSee('Copiar link');
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('booking.available', true)
+                ->where('booking.url', route('booking.service', $this->salon)));
     }
 
     private function busy(Professional $professional, string $time): Appointment

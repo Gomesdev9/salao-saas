@@ -55,13 +55,18 @@ class ScreensTest extends TestCase
 
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Bom dia, João')
-            ->assertSee('Quarta-feira, 21 de outubro')
-            ->assertSee('R$ 100,00')
-            ->assertSee('1 já atendidos · 1 a seguir')
-            ->assertSee('11:00')
-            ->assertSee('24/10')
-            ->assertDontSee('Fora da Semana');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('dashboard')
+                ->where('greeting', 'Bom dia')
+                ->where('firstName', 'João')
+                ->where('today', 'Quarta-feira, 21 de outubro')
+                ->where('expected', 100)
+                ->where('todayCount', 2)
+                ->where('doneCount', 1)
+                ->has('next', 1)
+                ->where('next.0.time', '11:00')
+                ->has('birthdays', 1)
+                ->where('birthdays.0.date', '24/10'));
     }
 
     public function test_dashboard_guides_a_new_company_until_its_first_appointment(): void
@@ -71,16 +76,20 @@ class ScreensTest extends TestCase
 
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Primeiros passos')
-            ->assertSee(route('services.create'))
-            ->assertSee(route('professionals.create'))
-            ->assertSee(route('appointments.create'));
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('firstSteps.0', ['label' => 'Cadastre seus serviços', 'route' => 'services.create', 'done' => false])
+                ->where('firstSteps.1', ['label' => 'Cadastre os profissionais', 'route' => 'professionals.create', 'done' => false])
+                ->where('firstSteps.2', ['label' => 'Faça o primeiro agendamento', 'route' => 'appointments.create', 'done' => false]));
 
         Appointment::factory()->for($this->user->salon)->create();
 
+        // Com tudo feito, o quadro some do painel
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertDontSee('Primeiros passos');
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('firstSteps.0.done', true)
+                ->where('firstSteps.1.done', true)
+                ->where('firstSteps.2.done', true));
     }
 
     public function test_professionals_are_split_into_active_and_inactive(): void
