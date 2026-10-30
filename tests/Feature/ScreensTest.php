@@ -10,6 +10,7 @@ use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 /**
@@ -113,9 +114,11 @@ class ScreensTest extends TestCase
         ]);
 
         $this->get(route('clients.index'))
-            ->assertSee('https://wa.me/5511998761122')
-            ->assertSee('esta semana')
-            ->assertSee('1 cliente cadastrado');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('clients/index')
+                ->where('total', 1)
+                ->where('clients.data.0.whatsappUrl', 'https://wa.me/5511998761122')
+                ->where('clients.data.0.birthdaySoon', true));
     }
 
     public function test_next_birthday_handles_year_turn_and_leap_day(): void

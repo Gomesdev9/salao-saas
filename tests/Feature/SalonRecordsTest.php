@@ -7,6 +7,7 @@ use App\Models\Professional;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class SalonRecordsTest extends TestCase
@@ -81,8 +82,9 @@ class SalonRecordsTest extends TestCase
         Client::factory()->for($this->user->salon)->create(['name' => 'Marcos Lima']);
 
         $this->get(route('clients.index', ['busca' => 'julia']))
-            ->assertSee('Juliana Prado')
-            ->assertDontSee('Marcos Lima');
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('clients.data', 1)
+                ->where('clients.data.0.name', 'Juliana Prado'));
 
         $this->get(route('clients.edit', Client::first()))->assertOk();
     }
