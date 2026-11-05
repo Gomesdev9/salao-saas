@@ -36,6 +36,16 @@ enum AppointmentStatus: string
     }
 
     /**
+     * Dados para as telas em React: valor, nome e cores do selo.
+     *
+     * @return array{value: string, label: string, color: string}
+     */
+    public function toProps(): array
+    {
+        return ['value' => $this->value, 'label' => $this->label(), 'color' => $this->color()];
+    }
+
+    /**
      * Status que ocupam o horário do profissional.
      *
      * @return list<self>

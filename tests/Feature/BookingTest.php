@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Testing\TestResponse;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 /**
@@ -59,12 +60,13 @@ class BookingTest extends TestCase
 
         $this->get(route('booking.service', $this->salon))
             ->assertOk()
-            ->assertSee('Studio Bela')
-            ->assertSee('Escova')
-            ->assertSee('60 min · R$ 60,00')
-            ->assertDontSee('Coloração inativa')
-            ->assertDontSee('Sem ninguém para fazer')
-            ->assertDontSee('De outro salão');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('booking/service')
+                ->where('salon.name', 'Studio Bela')
+                ->has('groups', 1)
+                ->has('groups.0.services', 1)
+                ->where('groups.0.services.0.name', 'Escova')
+                ->where('groups.0.services.0.details', '60 min · R$ 60,00'));
     }
 
     public function test_time_page_shows_free_and_taken_slots(): void
@@ -72,30 +74,32 @@ class BookingTest extends TestCase
         $this->busy($this->ana, '10:00');
 
         // Com a Ana, 10:00 está ocupado
-        $this->get(route('booking.time', ['salon' => $this->salon, 'servico' => $this->service->id, 'profissional' => $this->ana->id, 'data' => '2026-10-21']))
-            ->assertOk()
-            ->assertSee('value="09:00"', false)
-            ->assertDontSee('value="10:00"', false)
-            ->assertSee('Ocupado: </span>10:00', false)
-            // Termina às 19h: o último horário de 1h é 18:00
-            ->assertSee('value="18:00"', false)
-            ->assertDontSee('value="18:30"', false);
+        $slots = $this->slots(route('booking.time', ['salon' => $this->salon, 'servico' => $this->service->id, 'profissional' => $this->ana->id, 'data' => '2026-10-21']));
+
+        $this->assertTrue($slots['09:00']);
+        $this->assertFalse($slots['10:00']);
+        // Termina às 19h: o último horário de 1h é 18:00
+        $this->assertTrue($slots['18:00']);
+        $this->assertArrayNotHasKey('18:30', $slots);
 
         // Sem preferência, a Bruna está livre às 10:00
-        $this->get(route('booking.time', ['salon' => $this->salon, 'servico' => $this->service->id, 'data' => '2026-10-21']))
-            ->assertSee('value="10:00"', false);
+        $this->assertTrue($this->slots(route('booking.time', ['salon' => $this->salon, 'servico' => $this->service->id, 'data' => '2026-10-21']))['10:00']);
     }
 
     public function test_closed_days_and_past_times_are_not_offered(): void
     {
         $this->get(route('booking.time', ['salon' => $this->salon, 'servico' => $this->service->id, 'data' => '2026-10-25']))
             ->assertOk()
-            ->assertSee('O salão não abre neste dia');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('booking/time')
+                ->where('isOpen', false)
+                ->has('periods', 0));
 
         Carbon::setTestNow('2026-10-21 13:10');
-        $this->get(route('booking.time', ['salon' => $this->salon, 'servico' => $this->service->id, 'data' => '2026-10-21']))
-            ->assertDontSee('value="13:00"', false)
-            ->assertSee('value="13:30"', false);
+        $slots = $this->slots(route('booking.time', ['salon' => $this->salon, 'servico' => $this->service->id, 'data' => '2026-10-21']));
+
+        $this->assertArrayNotHasKey('13:00', $slots);
+        $this->assertTrue($slots['13:30']);
     }
 
     public function test_client_books_and_the_appointment_lands_in_the_agenda(): void
@@ -118,9 +122,11 @@ class BookingTest extends TestCase
 
         $this->get(route('booking.done', [$this->salon, $client->access_token, $appointment->id]))
             ->assertOk()
-            ->assertSee('Tudo certo')
-            ->assertSee('Maria')
-            ->assertSee('Escova');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('booking/done')
+                ->where('firstName', 'Maria')
+                ->where('appointment.service', 'Escova')
+                ->where('appointment.time', '10:00'));
     }
 
     public function test_existing_client_is_found_by_whatsapp(): void
@@ -160,9 +166,11 @@ class BookingTest extends TestCase
 
         $this->get(route('booking.mine', [$this->salon, $client->access_token]))
             ->assertOk()
-            ->assertSee('Olá')
-            ->assertSee('Próximo horário')
-            ->assertSee('Escova');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('booking/mine')
+                ->where('firstName', 'Maria')
+                ->where('next.id', $appointment->id)
+                ->where('next.service', 'Escova'));
 
         // Remarcar: o novo horário entra e o antigo é cancelado
         $this->withCookie('cliente_salao_'.$this->salon->id, $client->access_token)
@@ -218,22 +226,26 @@ class BookingTest extends TestCase
 
         $this->get(route('booking.service', $this->salon))
             ->assertOk()
-            ->assertSee('Chamar no WhatsApp')
-            ->assertDontSee('Escova');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('booking/unavailable')
+                ->whereNot('salon.whatsappUrl', null)
+                ->missing('groups'));
         $this->book();
 
         $this->assertSame(0, Appointment::count());
 
         // Durante o teste grátis funciona em qualquer plano
         $this->salon->update(['trial_ends_at' => now()->addDays(3)]);
-        $this->get(route('booking.service', $this->salon))->assertSee('Escova');
+        $this->get(route('booking.service', $this->salon))
+            ->assertInertia(fn (Assert $page) => $page->where('groups.0.services.0.name', 'Escova'));
     }
 
     public function test_owner_of_another_salon_logged_in_still_sees_this_salons_page(): void
     {
         $this->actingAs(User::factory()->create());
 
-        $this->get(route('booking.service', $this->salon))->assertSee('Escova');
+        $this->get(route('booking.service', $this->salon))
+            ->assertInertia(fn (Assert $page) => $page->where('groups.0.services.0.name', 'Escova'));
         $this->book()->assertRedirect();
 
         $this->assertSame($this->salon->id, Appointment::withoutGlobalScopes()->firstOrFail()->salon_id);
@@ -245,8 +257,21 @@ class BookingTest extends TestCase
 
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee(route('booking.service', $this->salon))
-            ->assertSee('Copiar link');
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('booking.available', true)
+                ->where('booking.url', route('booking.service', $this->salon)));
+    }
+
+    /**
+     * Horários da tela de dia e horário: hora => está livre.
+     *
+     * @return array<string, bool>
+     */
+    private function slots(string $url): array
+    {
+        $periods = $this->get($url)->assertOk()->viewData('page')['props']['periods'];
+
+        return collect($periods)->flatMap(fn (array $period) => $period['slots'])->pluck('free', 'time')->all();
     }
 
     private function busy(Professional $professional, string $time): Appointment

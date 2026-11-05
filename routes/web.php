@@ -8,6 +8,7 @@ use App\Http\Controllers\CommissionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\FinanceController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProfessionalController;
@@ -17,7 +18,7 @@ use App\Http\Middleware\EnsureFinanceInPlan;
 use Illuminate\Support\Facades\Route;
 
 // Página de divulgação do sistema, com o convite para a empresa se cadastrar
-Route::view('/', 'site.home')->name('home');
+Route::get('/', HomeController::class)->name('home');
 
 // Página pública de cada empresa, em que a cliente agenda sozinha (ex.: /agendar/studio-bela-vista)
 Route::prefix('agendar/{salon:slug}')->name('booking.')->controller(BookingController::class)->group(function () {

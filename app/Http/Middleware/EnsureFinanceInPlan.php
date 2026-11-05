@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -16,7 +17,9 @@ class EnsureFinanceInPlan
         $salon = $request->user()->salon;
 
         if (! $salon->hasFinance()) {
-            return response()->view('finance.upgrade', ['salon' => $salon], 403);
+            return Inertia::render('finance/upgrade', ['plan' => $salon->plan->label()])
+                ->toResponse($request)
+                ->setStatusCode(403);
         }
 
         return $next($request);

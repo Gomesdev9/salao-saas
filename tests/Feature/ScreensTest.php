@@ -10,6 +10,7 @@ use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 /**
@@ -54,13 +55,18 @@ class ScreensTest extends TestCase
 
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Bom dia, João')
-            ->assertSee('Quarta-feira, 21 de outubro')
-            ->assertSee('R$ 100,00')
-            ->assertSee('1 já atendidos · 1 a seguir')
-            ->assertSee('11:00')
-            ->assertSee('24/10')
-            ->assertDontSee('Fora da Semana');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('dashboard')
+                ->where('greeting', 'Bom dia')
+                ->where('firstName', 'João')
+                ->where('today', 'Quarta-feira, 21 de outubro')
+                ->where('expected', 100)
+                ->where('todayCount', 2)
+                ->where('doneCount', 1)
+                ->has('next', 1)
+                ->where('next.0.time', '11:00')
+                ->has('birthdays', 1)
+                ->where('birthdays.0.date', '24/10'));
     }
 
     public function test_dashboard_guides_a_new_company_until_its_first_appointment(): void
@@ -70,16 +76,20 @@ class ScreensTest extends TestCase
 
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Primeiros passos')
-            ->assertSee(route('services.create'))
-            ->assertSee(route('professionals.create'))
-            ->assertSee(route('appointments.create'));
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('firstSteps.0', ['label' => 'Cadastre seus serviços', 'route' => 'services.create', 'done' => false])
+                ->where('firstSteps.1', ['label' => 'Cadastre os profissionais', 'route' => 'professionals.create', 'done' => false])
+                ->where('firstSteps.2', ['label' => 'Faça o primeiro agendamento', 'route' => 'appointments.create', 'done' => false]));
 
         Appointment::factory()->for($this->user->salon)->create();
 
+        // Com tudo feito, o quadro some do painel
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertDontSee('Primeiros passos');
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('firstSteps.0.done', true)
+                ->where('firstSteps.1.done', true)
+                ->where('firstSteps.2.done', true));
     }
 
     public function test_professionals_are_split_into_active_and_inactive(): void
@@ -88,11 +98,14 @@ class ScreensTest extends TestCase
         Professional::factory()->for($this->user->salon)->create(['name' => 'Elisa Inativa', 'active' => false]);
 
         $this->get(route('professionals.index'))
-            ->assertSee('Ativos (1)')->assertSee('Inativos (1)')
-            ->assertSee('Ana Ativa')->assertDontSee('Elisa Inativa');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('professionals/index')
+                ->where('activeCount', 1)->where('inactiveCount', 1)
+                ->has('professionals', 1)->where('professionals.0.name', 'Ana Ativa'));
 
         $this->get(route('professionals.index', ['inativos' => 1]))
-            ->assertSee('Elisa Inativa')->assertDontSee('Ana Ativa');
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('professionals', 1)->where('professionals.0.name', 'Elisa Inativa'));
     }
 
     public function test_services_are_grouped_and_filtered_by_category(): void
@@ -100,10 +113,19 @@ class ScreensTest extends TestCase
         Service::factory()->for($this->user->salon)->create(['name' => 'Escova', 'category' => 'Cabelo', 'duration_minutes' => 120]);
         Service::factory()->for($this->user->salon)->create(['name' => 'Manicure', 'category' => 'Unhas']);
 
-        $this->get(route('services.index'))->assertSee('Escova')->assertSee('Manicure')->assertSee('2 h');
+        $this->get(route('services.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('services/index')
+                ->where('categories', ['Cabelo', 'Unhas'])
+                ->where('groups.0.services.0.name', 'Escova')
+                ->where('groups.0.services.0.duration_minutes', 120)
+                ->where('groups.1.services.0.name', 'Manicure'));
 
         $this->get(route('services.index', ['categoria' => 'Unhas']))
-            ->assertSee('Manicure')->assertDontSee('Escova');
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('category', 'Unhas')
+                ->has('groups', 1)
+                ->where('groups.0.services.0.name', 'Manicure'));
     }
 
     public function test_client_whatsapp_link_and_birthday_badge(): void
@@ -113,9 +135,11 @@ class ScreensTest extends TestCase
         ]);
 
         $this->get(route('clients.index'))
-            ->assertSee('https://wa.me/5511998761122')
-            ->assertSee('esta semana')
-            ->assertSee('1 cliente cadastrado');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('clients/index')
+                ->where('total', 1)
+                ->where('clients.data.0.whatsappUrl', 'https://wa.me/5511998761122')
+                ->where('clients.data.0.birthdaySoon', true));
     }
 
     public function test_next_birthday_handles_year_turn_and_leap_day(): void

@@ -10,7 +10,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 /**
  * Receber o pagamento de um atendimento: vira uma entrada no financeiro e o horário fica como "Atendido".
@@ -20,7 +21,7 @@ class PaymentController extends Controller
     /** Descontos oferecidos na tela, em %. */
     public const DISCOUNTS = [0, 5, 10];
 
-    public function create(Appointment $appointment): View|RedirectResponse
+    public function create(Appointment $appointment): Response|RedirectResponse
     {
         if ($redirect = $this->refuse($appointment)) {
             return $redirect;
@@ -28,10 +29,27 @@ class PaymentController extends Controller
 
         $appointment->load(['client', 'professional', 'service', 'salon']);
 
-        return view('payments.create', [
-            'appointment' => $appointment,
-            'methods' => PaymentMethod::forAppointments(),
+        $professional = $appointment->professional;
+        $percent = (float) $professional->commission_percent;
+
+        return Inertia::render('payments/create', [
+            'appointment' => [
+                'id' => $appointment->id,
+                'client' => $appointment->client->name,
+                'when' => $appointment->starts_at->format('d/m').' · '.$appointment->starts_at->format('H:i').'–'.$appointment->ends_at->format('H:i'),
+                'service' => $appointment->service->name,
+                'duration' => $appointment->service->duration_minutes,
+                'professional' => $professional->name,
+                'price' => (float) $appointment->price,
+            ],
+            'commission' => [
+                'percent' => $percent,
+                // 40,00 vira "40%" e 12,50 vira "12,5%"
+                'label' => rtrim(rtrim(number_format($percent, 2, ',', '.'), '0'), ',').'%',
+            ],
+            'methods' => array_map(fn (PaymentMethod $method) => ['value' => $method->value, 'label' => $method->label()], PaymentMethod::forAppointments()),
             'discounts' => self::DISCOUNTS,
+            'pixKey' => $appointment->salon->pix_key,
         ]);
     }
 

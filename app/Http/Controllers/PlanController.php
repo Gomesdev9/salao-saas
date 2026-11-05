@@ -6,20 +6,25 @@ use App\Enums\Plan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class PlanController extends Controller
 {
     /**
      * "Meu plano": o plano da empresa, o teste grátis e a troca de plano.
      */
-    public function edit(Request $request): View
+    public function edit(Request $request): Response
     {
         $salon = $request->user()->salon;
 
-        return view('plan.edit', [
-            'salon' => $salon,
-            'plans' => Plan::cases(),
+        return Inertia::render('plan/edit', [
+            'current' => $salon->plan->value,
+            'trial' => $salon->onTrial() ? [
+                'daysLeft' => $salon->trialDaysLeft(),
+                'endsOn' => $salon->trial_ends_at->translatedFormat('j \\d\\e F'),
+            ] : null,
+            'plans' => Plan::allProps(),
             'activeProfessionals' => $salon->activeProfessionalsCount(),
         ]);
     }

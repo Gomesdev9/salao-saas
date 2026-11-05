@@ -7,6 +7,7 @@ use App\Models\Professional;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class SalonRecordsTest extends TestCase
@@ -38,14 +39,14 @@ class SalonRecordsTest extends TestCase
 
         $service = Service::firstOrFail();
         $this->assertSame('49.90', $service->price);
-        $this->get(route('services.index'))->assertSee('R$ 49,90');
+        $this->get(route('services.index'))->assertInertia(fn (Assert $page) => $page->where('groups.0.services.0.price', 49.9));
 
         $this->put(route('services.update', $service), [
             'name' => 'Escova longa', 'duration_minutes' => 60, 'price' => 60, 'active' => '0',
         ])->assertRedirect(route('services.index'));
         $this->assertFalse($service->fresh()->active);
 
-        $this->get(route('services.edit', $service))->assertOk()->assertSee('Escova longa');
+        $this->get(route('services.edit', $service))->assertOk()->assertInertia(fn (Assert $page) => $page->component('services/form')->where('service.name', 'Escova longa'));
 
         $this->delete(route('services.destroy', $service));
         $this->assertModelMissing($service);
@@ -81,8 +82,9 @@ class SalonRecordsTest extends TestCase
         Client::factory()->for($this->user->salon)->create(['name' => 'Marcos Lima']);
 
         $this->get(route('clients.index', ['busca' => 'julia']))
-            ->assertSee('Juliana Prado')
-            ->assertDontSee('Marcos Lima');
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('clients.data', 1)
+                ->where('clients.data.0.name', 'Juliana Prado'));
 
         $this->get(route('clients.edit', Client::first()))->assertOk();
     }

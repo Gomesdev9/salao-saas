@@ -7,6 +7,7 @@ use App\Models\Professional;
 use App\Models\Salon;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class PlanTest extends TestCase
@@ -29,9 +30,10 @@ class PlanTest extends TestCase
 
         $this->get(route('home'))
             ->assertOk()
-            ->assertSeeInOrder(['Essencial', '49,90', 'Profissional', '89,90', 'Premium', '149,90'])
-            ->assertSee('Mais escolhido')
-            ->assertSee(route('register', ['plano' => 'premium']), false);
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('plans.0.label', 'Essencial')->where('plans.0.formattedPrice', 'R$ 49,90')
+                ->where('plans.1.label', 'Profissional')->where('plans.1.formattedPrice', 'R$ 89,90')->where('plans.1.highlighted', true)
+                ->where('plans.2.label', 'Premium')->where('plans.2.formattedPrice', 'R$ 149,90'));
     }
 
     public function test_plan_page_shows_current_plan_trial_and_usage(): void
@@ -40,10 +42,14 @@ class PlanTest extends TestCase
 
         $this->get(route('plan.edit'))
             ->assertOk()
-            ->assertSeeText('Essencial · R$ 49,90/mês')
-            ->assertSee('faltam')
-            ->assertSee('1 de 2')
-            ->assertSee('Mudar para o Premium');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('plan/edit')
+                ->where('current', 'essencial')
+                ->where('trial.daysLeft', 14)
+                ->where('activeProfessionals', 1)
+                ->where('plans.0.formattedPrice', 'R$ 49,90')
+                ->where('plans.0.professionalLimit', 2)
+                ->where('plans.2.label', 'Premium'));
     }
 
     public function test_owner_can_change_plan(): void
@@ -82,7 +88,9 @@ class PlanTest extends TestCase
         $ana = Professional::where('name', 'Ana')->first();
         $this->put(route('professionals.update', $ana), ['name' => 'Ana Souza', 'commission_percent' => 45, 'active' => 1])->assertSessionHasNoErrors();
 
-        $this->get(route('professionals.create'))->assertOk()->assertSee('mudar de plano');
+        $this->get(route('professionals.create'))->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('canActivate', false)
+            ->where('planLimit', 'O plano Essencial permite até 2 profissionais ativos, e a sua equipe já chegou nesse número.'));
     }
 
     public function test_other_companies_professionals_do_not_count_for_the_limit(): void

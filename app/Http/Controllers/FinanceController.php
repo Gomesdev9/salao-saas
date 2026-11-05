@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PaymentMethod;
 use App\Http\Controllers\Concerns\ResolvesMonth;
 use App\Models\CommissionAdvance;
 use App\Models\Expense;
@@ -12,7 +13,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class FinanceController extends Controller
 {
@@ -23,7 +25,7 @@ class FinanceController extends Controller
     /**
      * Visão do mês: recebido, despesas, comissões, lucro e gráficos.
      */
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $month = $this->month($request);
         $end = $month->copy()->endOfMonth();
@@ -36,7 +38,7 @@ class FinanceController extends Controller
         $commissions = (float) $payments->sum('commission');
 
         $byMethod = $payments->groupBy(fn (Payment $p) => $p->method->value)
-            ->map(fn (Collection $group) => ['method' => $group->first()->method, 'total' => (float) $group->sum('amount')])
+            ->map(fn (Collection $group) => ['label' => $group->first()->method->longLabel(), 'total' => (float) $group->sum('amount')])
             ->sortByDesc('total')
             ->values();
 
@@ -49,8 +51,10 @@ class FinanceController extends Controller
             ->sortByDesc('total')
             ->values();
 
-        return view('finance.index', [
-            'month' => $month,
+        return Inertia::render('finance/index', [
+            'month' => $this->monthProps($month),
+            'title' => Str::ucfirst($month->translatedFormat('F \\d\\e Y')),
+            'today' => today()->format('d/m'),
             'isCurrentMonth' => $month->isSameMonth(today()),
             'received' => $received,
             'paymentsCount' => $payments->count(),
@@ -62,14 +66,22 @@ class FinanceController extends Controller
             'chart' => $this->dailyChart($month, $payments),
             'byMethod' => $byMethod,
             'byProfessional' => $byProfessional,
-            'bills' => Expense::whereNull('paid_at')->orderBy('due_date')->limit(4)->get(),
+            'bills' => Expense::whereNull('paid_at')->orderBy('due_date')->limit(4)->get()->map(fn (Expense $bill) => [
+                'id' => $bill->id,
+                'description' => $bill->description,
+                'day' => $bill->due_date->format('d'),
+                'monthName' => $bill->due_date->translatedFormat('M'),
+                'month' => $bill->due_date->format('Y-m'),
+                'amount' => (float) $bill->amount,
+                'overdue' => $bill->isOverdue(),
+            ]),
         ]);
     }
 
     /**
      * Lançamentos do mês: entradas (atendimentos pagos) e saídas (despesas), com filtro e busca.
      */
-    public function entries(Request $request): View
+    public function entries(Request $request): Response
     {
         $month = $this->month($request);
         $end = $month->copy()->endOfMonth();
@@ -89,16 +101,18 @@ class FinanceController extends Controller
 
         $rows = collect()
             ->concat($type === 'saidas' ? [] : $payments->get()->map(fn (Payment $payment) => [
+                'key' => "p{$payment->id}",
                 'date' => $payment->paid_at,
                 'description' => $payment->description,
                 'detail' => 'Atendimento'.($payment->professional ? " · {$payment->professional->name}" : ''),
                 'method' => $payment->method->label().($payment->installments > 1 ? " {$payment->installments}x" : ''),
                 'amount' => (float) $payment->amount,
                 'status' => ['Recebido', 'bg-[#E7F4EC] text-[#1C5234]'],
-                'appointment_id' => $payment->appointment_id,
+                'appointmentId' => $payment->appointment_id,
                 'expense' => null,
             ]))
             ->concat($type === 'entradas' ? [] : $expenses->get()->map(fn (Expense $expense) => [
+                'key' => "e{$expense->id}",
                 'date' => $expense->due_date,
                 'description' => $expense->description,
                 'detail' => $expense->category,
@@ -109,10 +123,11 @@ class FinanceController extends Controller
                     $expense->isOverdue() => ['Vencida', 'bg-[#FBE9E7] text-[#8A2A1B]'],
                     default => ['A vencer', 'bg-mel text-mel-texto'],
                 },
-                'appointment_id' => null,
-                'expense' => $expense,
+                'appointmentId' => null,
+                'expense' => ['id' => $expense->id, 'paid' => $expense->isPaid()],
             ]))
             ->sortByDesc(fn (array $row) => $row['date']->toDateString())
+            ->map(fn (array $row) => [...$row, 'date' => $row['date']->format('d/m')])
             ->values();
 
         // Entradas e saídas vêm de tabelas diferentes, então a paginação é feita na lista já juntada
@@ -122,13 +137,25 @@ class FinanceController extends Controller
             'query' => $request->query(),
         ]);
 
-        return view('finance.entries', [
-            'month' => $month,
+        return Inertia::render('finance/entries', [
+            'month' => $this->monthProps($month),
+            'monthName' => $month->translatedFormat('F'),
             'type' => $type,
             'search' => $search,
-            'rows' => $rows,
+            'rows' => [
+                'data' => $rows->items(),
+                'from' => $rows->firstItem(),
+                'to' => $rows->lastItem(),
+                'total' => $rows->total(),
+                'currentPage' => $rows->currentPage(),
+                'prevUrl' => $rows->previousPageUrl(),
+                'nextUrl' => $rows->nextPageUrl(),
+            ],
             'incoming' => $incoming,
             'outgoing' => $outgoing,
+            'categories' => Expense::CATEGORIES,
+            'methods' => array_map(fn (PaymentMethod $method) => ['value' => $method->value, 'label' => $method->label()], PaymentMethod::cases()),
+            'defaultDue' => ($month->isSameMonth(today()) ? today() : $month)->toDateString(),
         ]);
     }
 

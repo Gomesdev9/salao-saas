@@ -10,6 +10,7 @@ use App\Models\Service;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class AppointmentTest extends TestCase
@@ -56,15 +57,29 @@ class AppointmentTest extends TestCase
 
         $this->get(route('appointments.index', ['data' => '2026-11-03']))
             ->assertOk()
-            ->assertSee('Ana')
-            ->assertSee('10:00 Fernanda')
-            ->assertSee('R$ 50,00');
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('appointments/index')
+                ->where('professionals.0.name', 'Ana')
+                ->where('appointments.0.time', '10:00')
+                ->where('appointments.0.client', 'Fernanda')
+                // 10:00 fica 2 horas (120 min) abaixo do começo da grade, às 08:00
+                ->where('appointments.0.offset', 120)
+                ->where('total', 50));
 
         $this->get(route('appointments.index', ['data' => 'lixo']))->assertOk();
         $this->get(route('appointments.create', ['data' => '2026-11-03', 'hora' => '14:30', 'profissional' => $this->professional->id]))
             ->assertOk()
-            ->assertSee('value="14:30"', false);
-        $this->get(route('appointments.edit', Appointment::first()))->assertOk();
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('appointments/form')
+                ->where('appointment.date', '2026-11-03')
+                ->where('appointment.time', '14:30')
+                ->where('appointment.professional_id', $this->professional->id));
+        $this->get(route('appointments.edit', Appointment::first()))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('summary.when', '03/11 · 10:00–11:00')
+                ->where('summary.canReceive', true)
+                ->where('client.name', 'Fernanda'));
     }
 
     public function test_phone_agenda_lists_the_day_and_filters_by_professional(): void
@@ -73,20 +88,21 @@ class AppointmentTest extends TestCase
         $bruna->services()->attach($this->service);
         $this->book();
         $this->book(['professional_id' => $bruna->id, 'time' => '11:00']);
-        [$ofAna, $ofBruna] = Appointment::orderBy('starts_at')->get()->map(fn (Appointment $a) => 'href="'.route('appointments.edit', $a).'"');
-
-        // Sem filtro: cada horário aparece na lista do celular e na coluna do computador
-        $all = $this->get(route('appointments.index', ['data' => '2026-11-03']))
+        // Sem filtro: o dia inteiro, com a contagem de cada profissional
+        $this->get(route('appointments.index', ['data' => '2026-11-03']))
             ->assertOk()
-            ->assertSee('Todos · 2')
-            ->assertSee('Bruna · 1')
-            ->assertSee('aria-controls="menu-mais"', false);
-        $this->assertSame(2, substr_count($all->getContent(), $ofAna));
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('appointments', 2)
+                ->where('filterId', null)
+                ->where('professionals.1.firstName', 'Bruna')
+                ->where('professionals.1.count', 1));
 
-        // Filtrando a Bruna: o horário da Ana fica só na grade do computador
-        $filtered = $this->get(route('appointments.index', ['data' => '2026-11-03', 'profissional' => $bruna->id]))->assertOk();
-        $this->assertSame(1, substr_count($filtered->getContent(), $ofAna));
-        $this->assertSame(2, substr_count($filtered->getContent(), $ofBruna));
+        // Filtrando a Bruna: a lista do celular mostra só ela; a grade do computador continua com todos
+        $this->get(route('appointments.index', ['data' => '2026-11-03', 'profissional' => $bruna->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('appointments', 2)
+                ->where('filterId', $bruna->id));
     }
 
     public function test_booking_calculates_end_time_and_price(): void
@@ -166,6 +182,7 @@ class AppointmentTest extends TestCase
         $this->book(['client_id' => $foreign->client_id])->assertSessionHasErrors('client_id');
 
         $this->get(route('appointments.index', ['data' => $foreign->starts_at->toDateString()]))
-            ->assertDontSee($foreignClientName);
+            ->assertDontSee($foreignClientName)
+            ->assertInertia(fn (Assert $page) => $page->has('appointments', 0));
     }
 }
