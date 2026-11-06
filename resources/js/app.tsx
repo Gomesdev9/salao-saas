@@ -3,6 +3,12 @@ import '../css/app.css';
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
 import type { ResolvedComponent } from '@inertiajs/react';
+import { setupDemo } from '@/lib/demo';
+
+// Na cópia publicada no GitHub Pages as telas vêm de arquivos salvos, sem servidor (ver lib/demo.ts)
+if (import.meta.env.VITE_DEMO === 'true') {
+    setupDemo();
+}
 
 // Cada tela fica em resources/js/pages (ex.: o controller manda 'clients/index' e abre pages/clients/index.tsx)
 const pages = import.meta.glob<{ default: ResolvedComponent }>('./pages/**/*.tsx');

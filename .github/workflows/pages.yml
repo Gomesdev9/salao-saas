@@ -1,0 +1,84 @@
+name: Demonstração no GitHub Pages
+
+# Publica uma cópia do sistema para ver no navegador, com o salão de exemplo do DatabaseSeeder.
+# O GitHub Pages não roda PHP, então o Laravel roda aqui no Actions, cada tela é salva como arquivo
+# (.github/pages/export.mjs) e o site estático vai para o Pages. Nada do que se faz na demonstração é salvo.
+# Todo dia ela é refeita para a agenda e o financeiro mostrarem as datas de hoje.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 9 * * *' # 06:00 em Brasília
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      APP_URL: http://127.0.0.1:8000
+      APP_ENV: production
+      APP_DEBUG: 'false'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, intl
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      - run: composer install --no-interaction --prefer-dist
+      - run: npm ci
+
+      - name: Banco com o salão de exemplo
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+          touch database/database.sqlite
+          php artisan migrate:fresh --seed --force
+
+      - name: Telas em modo demonstração
+        run: npm run build
+        env:
+          ASSET_URL: ${{ steps.pages.outputs.base_url }}
+          VITE_DEMO: 'true'
+
+      - name: Salvar as telas como site estático
+        env:
+          ASSET_URL: ${{ steps.pages.outputs.base_url }}
+        run: |
+          php .github/pages/urls.php > urls.json
+          php artisan serve --host=127.0.0.1 --port=8000 > serve.log 2>&1 &
+          timeout 30 bash -c 'until curl -s -o /dev/null http://127.0.0.1:8000; do sleep 1; done'
+          node .github/pages/export.mjs urls.json _site "${{ steps.pages.outputs.base_url }}"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
