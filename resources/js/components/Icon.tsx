@@ -69,6 +69,27 @@ const paths: Record<string, ReactNode> = {
             <path d="M3 21l1.7-5A8.5 8.5 0 1 1 8 19.3L3 21z" /><path d="M9 10c.5 2 2 3.5 4 4l1.2-1.2 2 1-.4 1.6c-3.5.3-7.4-3.6-7.1-7.1L10.3 8l1 2L10 11.2" />
         </>
     ),
+    instagram: (
+        <>
+            <rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><path d="M17.5 6.5h.01" />
+        </>
+    ),
+    relogio: (
+        <>
+            <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+        </>
+    ),
+    pagina: (
+        <>
+            <rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18" /><circle cx="9" cy="14.5" r="2" /><path d="M13 13.5h5M13 16h3" />
+        </>
+    ),
+    foto: (
+        <>
+            <rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="9" cy="10" r="2" /><path d="m21 16-5-5-9 9" />
+        </>
+    ),
+    lixo: <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />,
 };
 
 export default function Icon({ name, className = 'h-5 w-5' }: { name: string; className?: string }) {

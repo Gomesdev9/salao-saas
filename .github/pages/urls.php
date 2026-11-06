@@ -35,6 +35,7 @@ $private = [
     route('dashboard'),
     route('profile.edit'),
     route('plan.edit'),
+    route('booking-page.edit'),
     route('appointments.index'),
     route('appointments.create'),
     route('finance.index'),

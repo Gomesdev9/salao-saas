@@ -37,6 +37,9 @@ class BookingController extends Controller
 
     private const FULL_WEEKDAYS = [1 => 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
+    /** @var array<int, array{logo: ?array{id: int, url: string}, cover: ?array{id: int, url: string}, gallery: list<array{id: int, url: string}>}> */
+    private array $photos = [];
+
     /** Passo 1: o procedimento. */
     public function service(Request $request, Salon $salon): InertiaResponse
     {
@@ -56,6 +59,8 @@ class BookingController extends Controller
             'selectedId' => $services->firstWhere('id', $request->integer('servico'))?->id,
             'nextUrl' => route('booking.time', $salon),
             'reschedule' => $this->rescheduleParam($request),
+            // Na remarcação a cliente já conhece o salão: vai direto para a lista
+            'showcase' => $this->rescheduleParam($request) ? null : $this->showcaseProps($salon),
         ]);
     }
 
@@ -448,13 +453,13 @@ class BookingController extends Controller
 
     private function unavailable(Salon $salon): InertiaResponse
     {
-        return Inertia::render('booking/unavailable', ['salon' => $this->salonProps($salon)]);
+        return Inertia::render('booking/unavailable', ['salon' => $this->salonProps($salon), 'showcase' => $this->showcaseProps($salon)]);
     }
 
     /**
      * O que as telas dos passos usam: o salão e o link "Meus horários" quando a cliente já agendou neste aparelho.
      *
-     * @return array{salon: array{name: string, city: ?string, whatsappUrl: ?string}, accountUrl: ?string}
+     * @return array{salon: array<string, mixed>, accountUrl: ?string}
      */
     private function pageProps(Request $request, Salon $salon): array
     {
@@ -467,11 +472,51 @@ class BookingController extends Controller
     }
 
     /**
-     * @return array{name: string, city: ?string, whatsappUrl: ?string}
+     * O salão em todas as telas: nome, WhatsApp, logo e as cores escolhidas em "Minha página".
+     *
+     * @return array{name: string, city: ?string, whatsappUrl: ?string, logoUrl: ?string, theme: array{accent: string, accentChannels: string, accentDarkChannels: string, background: string}}
      */
     private function salonProps(Salon $salon): array
     {
-        return ['name' => $salon->name, 'city' => $salon->city, 'whatsappUrl' => $salon->whatsappUrl()];
+        return [
+            'name' => $salon->name,
+            'city' => $salon->city,
+            'whatsappUrl' => $salon->whatsappUrl(),
+            'logoUrl' => $this->photos($salon)['logo']['url'] ?? null,
+            'theme' => $salon->pageTheme(),
+        ];
+    }
+
+    /**
+     * Vitrine do salão no começo da página: capa, frase, "Sobre", galeria e contatos.
+     *
+     * @return array{headline: ?string, about: ?string, coverUrl: ?string, gallery: list<string>, address: ?string, mapsUrl: ?string, instagram: ?string, instagramUrl: ?string, hoursSummary: string}
+     */
+    private function showcaseProps(Salon $salon): array
+    {
+        $photos = $this->photos($salon);
+
+        return [
+            'headline' => $salon->page_headline,
+            'about' => $salon->page_about,
+            'coverUrl' => $photos['cover']['url'] ?? null,
+            'gallery' => array_column($photos['gallery'], 'url'),
+            'address' => $salon->address,
+            'mapsUrl' => $salon->mapsUrl(),
+            'instagram' => $salon->instagram,
+            'instagramUrl' => $salon->instagramUrl(),
+            'hoursSummary' => $salon->openingHoursSummary(),
+        ];
+    }
+
+    /**
+     * As fotos da página, buscadas uma vez por requisição.
+     *
+     * @return array{logo: ?array{id: int, url: string}, cover: ?array{id: int, url: string}, gallery: list<array{id: int, url: string}>}
+     */
+    private function photos(Salon $salon): array
+    {
+        return $this->photos[$salon->id] ??= $salon->pagePhotos();
     }
 
     /**

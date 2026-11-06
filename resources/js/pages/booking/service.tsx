@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import { type Showcase, ShowcaseDetails, ShowcaseHero } from '@/components/BookingShowcase';
 import Icon from '@/components/Icon';
 import { cx } from '@/lib/format';
 import BookingLayout, { BarButton, BarSummary, type BookingSalon, WhatsappButton } from '@/layouts/BookingLayout';
@@ -13,10 +14,11 @@ type Props = {
     selectedId: number | null;
     nextUrl: string;
     reschedule: number | null;
+    showcase: Showcase | null;
 };
 
 /** Passo 1: o procedimento */
-export default function Service({ salon, accountUrl, groups, selectedId, nextUrl, reschedule }: Props) {
+export default function Service({ salon, accountUrl, groups, selectedId, nextUrl, reschedule, showcase }: Props) {
     const services = groups.flatMap((group) => group.services);
     const [selected, setSelected] = useState(selectedId);
     const [tab, setTab] = useState(groups.find((group) => group.services.some((service) => service.id === selectedId))?.name ?? groups[0]?.name);
@@ -28,6 +30,7 @@ export default function Service({ salon, accountUrl, groups, selectedId, nextUrl
             title="Agendar"
             step={1}
             account={accountUrl}
+            hero={showcase && <ShowcaseHero name={salon.name} city={salon.city} logoUrl={salon.logoUrl} showcase={showcase} />}
             heading={
                 <>
                     Qual procedimento você quer <em>agendar</em>?
@@ -117,6 +120,8 @@ export default function Service({ salon, accountUrl, groups, selectedId, nextUrl
                     )}
                 </>
             )}
+
+            {showcase && <ShowcaseDetails name={salon.name} whatsappUrl={salon.whatsappUrl} showcase={showcase} />}
         </BookingLayout>
     );
 }

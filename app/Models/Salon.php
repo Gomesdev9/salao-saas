@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Enums\BusinessType;
+use App\Enums\PhotoKind;
 use App\Enums\Plan;
+use App\Support\Color;
 use App\Support\Phone;
 use Carbon\CarbonInterface;
 use Database\Factories\SalonFactory;
@@ -13,11 +15,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'slug', 'business_type', 'plan', 'trial_ends_at', 'phone', 'city', 'pix_key'])]
+#[Fillable(['name', 'slug', 'business_type', 'plan', 'trial_ends_at', 'phone', 'city', 'pix_key',
+    'page_accent_color', 'page_background_color', 'page_headline', 'page_about', 'address', 'instagram'])]
 class Salon extends Model
 {
     /** @use HasFactory<SalonFactory> */
     use HasFactory;
+
+    /** Cor dos botões e destaques da página pública, quando o salão não escolheu outra. */
+    public const DEFAULT_ACCENT_COLOR = '#925837';
+
+    /** Cor do fundo da página pública, quando o salão não escolheu outra. */
+    public const DEFAULT_BACKGROUND_COLOR = '#FEFAF3';
 
     protected function casts(): array
     {
@@ -73,6 +82,51 @@ class Salon extends Model
     public function whatsappUrl(): ?string
     {
         return Phone::whatsappUrl($this->phone);
+    }
+
+    public function instagramUrl(): ?string
+    {
+        return $this->instagram ? "https://instagram.com/{$this->instagram}" : null;
+    }
+
+    /** Endereço aberto no Google Maps. */
+    public function mapsUrl(): ?string
+    {
+        return $this->address ? 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($this->address) : null;
+    }
+
+    /**
+     * Cores da página pública. Os canais ("146 88 55") vão para as variáveis CSS do BookingLayout.
+     *
+     * @return array{accent: string, accentChannels: string, accentDarkChannels: string, background: string}
+     */
+    public function pageTheme(): array
+    {
+        $accent = $this->page_accent_color ?: self::DEFAULT_ACCENT_COLOR;
+
+        return [
+            'accent' => $accent,
+            'accentChannels' => Color::channels($accent),
+            'accentDarkChannels' => Color::channels(Color::darken($accent)),
+            'background' => $this->page_background_color ?: self::DEFAULT_BACKGROUND_COLOR,
+        ];
+    }
+
+    /**
+     * Fotos da página pública, sem carregar as imagens (elas são servidas por SalonPhotoController).
+     *
+     * @return array{logo: ?array{id: int, url: string}, cover: ?array{id: int, url: string}, gallery: list<array{id: int, url: string}>}
+     */
+    public function pagePhotos(): array
+    {
+        $photos = $this->photos()->withoutGlobalScopes()->select(SalonPhoto::SUMMARY_COLUMNS)->orderBy('position')->orderBy('id')->get();
+        $props = fn (?SalonPhoto $photo) => $photo ? ['id' => $photo->id, 'url' => $photo->url()] : null;
+
+        return [
+            'logo' => $props($photos->firstWhere('kind', PhotoKind::Logo)),
+            'cover' => $props($photos->firstWhere('kind', PhotoKind::Cover)),
+            'gallery' => $photos->where('kind', PhotoKind::Gallery)->map($props)->values()->all(),
+        ];
     }
 
     /**
@@ -139,5 +193,10 @@ class Salon extends Model
     public function clients(): HasMany
     {
         return $this->hasMany(Client::class);
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(SalonPhoto::class);
     }
 }
