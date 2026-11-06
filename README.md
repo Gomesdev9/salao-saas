@@ -2,7 +2,7 @@
 
 Sistema web para salões de beleza: agenda, clientes, profissionais, serviços, lembretes por WhatsApp e financeiro básico. Cada salão tem sua própria conta e só enxerga os próprios dados.
 
-Feito com **Laravel 13**, **Blade**, **Tailwind CSS** e **SQLite** no desenvolvimento (MySQL em produção).
+Feito com **Laravel 13**, **Blade**, **Tailwind CSS** e **SQLite** no desenvolvimento (Postgres do **Supabase** para os dados de verdade).
 
 ## O que já funciona (Fase 1)
 
@@ -78,6 +78,50 @@ Enquanto estiver mexendo no visual, deixe `npm run dev` rodando num terminal: o 
 ```powershell
 php artisan test
 ```
+
+## Banco de dados no Supabase
+
+No computador o sistema usa um arquivo SQLite, que é ótimo para testar mas fica só na sua máquina. Para guardar os dados de verdade, o sistema se liga ao **Postgres do Supabase** (tem plano grátis). Quem fala com o banco é o Laravel; as telas nunca acessam o Supabase direto.
+
+### 1. Crie o projeto no Supabase (só uma vez)
+
+1. Entre em <https://supabase.com>, crie a conta e clique em **New project**.
+2. Dê um nome (ex.: `salao-saas`), crie uma **senha do banco** e guarde-a. Use só letras e números (o botão *Generate a password* já faz assim); símbolos como `@` ou `#` quebram o endereço de conexão.
+3. Em **Region**, escolha **South America (São Paulo)**.
+4. Espere o projeto ficar pronto (uns 2 minutos).
+
+### 2. Copie o endereço de conexão
+
+1. No topo do painel do projeto, clique em **Connect**.
+2. Em **Connection string**, escolha o tipo **URI** e copie o da **Session pooler** (porta `5432`, endereço terminando em `pooler.supabase.com`). Não use a *Direct connection* (ela não funciona em muitas internets de casa) nem a *Transaction pooler* (porta `6543`, não combina com o Laravel).
+3. Troque `[YOUR-PASSWORD]` pela senha que você criou.
+
+### 3. Ligue o sistema
+
+No arquivo `.env`, troque a parte do banco por:
+
+```env
+DB_CONNECTION=pgsql
+DB_URL="postgresql://postgres.abcdefghijklmnop:SuaSenha123@aws-0-sa-east-1.pooler.supabase.com:5432/postgres"
+DB_SSLMODE=require
+```
+
+(com o endereço que você copiou no lugar do exemplo). Depois crie as tabelas lá:
+
+```powershell
+php artisan config:clear
+php artisan migrate --seed
+```
+
+O `--seed` coloca o salão de demonstração; deixe ele de fora se quiser começar vazio. Abra o sistema normalmente: tudo o que for cadastrado agora fica salvo no Supabase, e dá para ver as tabelas em **Table Editor** no painel.
+
+Se aparecer `could not find driver`, o PHP está sem o Postgres ligado. No Herd: **Settings > PHP > Extensions** e marque `pdo_pgsql` e `pgsql` (ou, no `php.ini`, tire o `;` da frente de `extension=pdo_pgsql` e `extension=pgsql`).
+
+Para voltar ao SQLite local, é só pôr `DB_CONNECTION=sqlite` e apagar (ou comentar) o `DB_URL`.
+
+### Segurança
+
+O Supabase abre automaticamente uma API pública para as tabelas do banco. Como o sistema não usa essa API, a migração `lock_supabase_data_api_out_of_tables` fecha essa porta: as chaves públicas do Supabase (`anon`) não conseguem ler nem gravar nada, e a segurança por linha (RLS) fica ligada em todas as tabelas. A separação entre salões continua sendo feita pelo sistema (`BelongsToSalon`). **Nunca** coloque a senha do banco nem a chave `service_role` em arquivos que vão para o GitHub; elas ficam só no `.env`, que já é ignorado pelo Git.
 
 ## Onde fica cada coisa
 
