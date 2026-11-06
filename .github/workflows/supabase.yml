@@ -1,0 +1,52 @@
+name: Criar tabelas no Supabase
+
+# Roda as migrações do Laravel no banco do Supabase, sem precisar do PHP com Postgres no computador.
+# Antes, guarde o endereço da Session pooler em Settings > Secrets and variables > Actions,
+# num segredo chamado SUPABASE_DB_URL. Depois é só clicar em "Run workflow" na aba Actions.
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: 'Colocar o salão de demonstração (só na primeira vez)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      DB_CONNECTION: pgsql
+      DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      DB_SSLMODE: require
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Conferir o segredo
+        run: |
+          if [ -z "$DB_URL" ]; then
+            echo "::error::Falta o segredo SUPABASE_DB_URL (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_pgsql, intl
+
+      - run: composer install --no-interaction --prefer-dist
+      - run: cp .env.example .env && php artisan key:generate
+
+      - name: Criar e atualizar as tabelas
+        run: php artisan migrate --force
+
+      - name: Salão de demonstração
+        if: ${{ inputs.seed }}
+        run: php artisan db:seed --force

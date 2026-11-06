@@ -96,7 +96,18 @@ No computador o sistema usa um arquivo SQLite, que é ótimo para testar mas fic
 2. Em **Connection string**, escolha o tipo **URI** e copie o da **Session pooler** (porta `5432`, endereço terminando em `pooler.supabase.com`). Não use a *Direct connection* (ela não funciona em muitas internets de casa) nem a *Transaction pooler* (porta `6543`, não combina com o Laravel).
 3. Troque `[YOUR-PASSWORD]` pela senha que você criou.
 
-### 3. Ligue o sistema
+### 3. Crie as tabelas pelo GitHub (o jeito mais fácil)
+
+Assim não é preciso mexer no PHP do computador:
+
+1. No GitHub, abra o repositório e vá em **Settings > Secrets and variables > Actions > New repository secret**.
+2. Em **Name**, escreva `SUPABASE_DB_URL`. Em **Secret**, cole o endereço da Session pooler (já com a senha no lugar de `[YOUR-PASSWORD]`). Clique em **Add secret**. O GitHub guarda a senha escondida: ninguém consegue ver depois, nem nos registros.
+3. Vá na aba **Actions**, clique em **Criar tabelas no Supabase** e depois em **Run workflow**. Na primeira vez, marque **Colocar o salão de demonstração** se quiser os dados de exemplo.
+4. Quando ficar verde (uns 2 minutos), as tabelas aparecem no **Table Editor** do Supabase.
+
+Sempre que o sistema ganhar tabelas novas, rode de novo (sem marcar a demonstração).
+
+### 4. (Opcional) Ligue o sistema do computador ao Supabase
 
 No arquivo `.env`, troque a parte do banco por:
 
