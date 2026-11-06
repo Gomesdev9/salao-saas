@@ -19,9 +19,10 @@ export default {
                 cartao: '#FFFBF6', // fundo dos cards e campos
                 areia: '#F7F1E7', // cabeçalho de tabelas
                 caramelo: '#BC7F5C', // destaque
+                // Botões. Na página pública a cor vem do salão ("Minha página"), pelas variáveis do BookingLayout.
                 cafe: {
-                    DEFAULT: '#925837', // botões
-                    escuro: '#78472A',
+                    DEFAULT: 'rgb(var(--cor-destaque, 146 88 55) / <alpha-value>)',
+                    escuro: 'rgb(var(--cor-destaque-escuro, 120 71 42) / <alpha-value>)',
                 },
                 tinta: '#1C0D06', // texto e menu lateral
                 suave: '#6F5947', // texto secundário

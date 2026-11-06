@@ -3,12 +3,12 @@ import { useEffect, useRef, useState } from 'react';
 import Avatar from '@/components/Avatar';
 import Icon from '@/components/Icon';
 import { cx } from '@/lib/format';
-import { isActive, mainItems, type NavItem } from './nav';
+import { bottomItems, isActive, mainItems, type NavItem } from './nav';
 import { LogoutButton } from './Sidebar';
 
 // Telas que ficam dentro do "Mais"
 const more: NavItem[] = [
-    ...mainItems.slice(3),
+    ...mainItems.filter((item) => !bottomItems.includes(item)),
     { route: 'plan.edit', active: 'plan.*', icon: 'plano', label: 'Meu plano' },
 ];
 
@@ -17,7 +17,7 @@ export default function BottomNav() {
     const { user } = usePage().props.auth!;
     const [open, setOpen] = useState(false);
     const box = useRef<HTMLDivElement>(null);
-    const moreActive = isActive('professionals.*', 'services.*', 'finance.*', 'plan.*', 'profile.*');
+    const moreActive = isActive('booking-page.*', 'professionals.*', 'services.*', 'finance.*', 'plan.*', 'profile.*');
 
     // Fecha com Esc ou tocando fora do menu
     useEffect(() => {
@@ -63,7 +63,7 @@ export default function BottomNav() {
             )}
 
             <nav aria-label="Menu principal" className="vidro-escuro grid h-[68px] grid-cols-4 rounded-full">
-                {mainItems.slice(0, 3).map((item) => {
+                {bottomItems.map((item) => {
                     const active = isActive(item.active);
 
                     return (

@@ -1,9 +1,10 @@
 import { Head, Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
+import { type PageTheme, SalonLogo, ThemeScope } from '@/components/BookingShowcase';
 import Icon from '@/components/Icon';
 import { cx } from '@/lib/format';
 
-export type BookingSalon = { name: string; city: string | null; whatsappUrl: string | null };
+export type BookingSalon = { name: string; city: string | null; whatsappUrl: string | null; logoUrl: string | null; theme: PageTheme };
 
 const circle = 'flex h-11 w-11 items-center justify-center botao-vidro rounded-full bg-white/45 transition hover:bg-white/80';
 
@@ -15,6 +16,7 @@ export default function BookingLayout({
     back,
     account,
     close,
+    hero,
     heading,
     bar,
     children,
@@ -25,12 +27,14 @@ export default function BookingLayout({
     back?: string;
     account?: string | null;
     close?: string;
+    hero?: ReactNode;
     heading?: ReactNode;
     bar?: ReactNode;
     children: ReactNode;
 }) {
     return (
-        <>
+        // As cores escolhidas pelo salão em "Minha página" valem para todos os passos
+        <ThemeScope theme={salon.theme} className="min-h-screen">
             <Head title={`${title} · ${salon.name}`} />
             <div className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col gap-5 px-4 pb-36 pt-4">
                 {/* Navegação com efeito de vidro: fica presa no topo e desfoca a página que passa por trás */}
@@ -44,7 +48,10 @@ export default function BookingLayout({
                         <span />
                     )}
 
-                    <span className="truncate text-center font-display text-xl italic">{salon.name}</span>
+                    <span className="flex min-w-0 items-center justify-center gap-2">
+                        {salon.logoUrl && <SalonLogo name={salon.name} url={salon.logoUrl} className="h-8 w-8" />}
+                        <span className="truncate font-display text-xl italic">{salon.name}</span>
+                    </span>
 
                     {close ? (
                         <Link href={close} className={circle}>
@@ -60,6 +67,8 @@ export default function BookingLayout({
                         <span />
                     )}
                 </header>
+
+                {hero}
 
                 {heading && (
                     <div className="flex flex-col gap-2">
@@ -84,7 +93,7 @@ export default function BookingLayout({
                     <div className="mx-auto flex max-w-[448px] items-center justify-between gap-3 vidro-escuro rounded-full py-2.5 pl-6 pr-2.5 text-creme">{bar}</div>
                 </div>
             )}
-        </>
+        </ThemeScope>
     );
 }
 

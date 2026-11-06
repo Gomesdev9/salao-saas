@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\BookingPageController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CommissionAdvanceController;
 use App\Http\Controllers\CommissionController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProfessionalController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SalonPhotoController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Middleware\EnsureFinanceInPlan;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +33,9 @@ Route::prefix('agendar/{salon:slug}')->name('booking.')->controller(BookingContr
     Route::get('meus-horarios/{token}/{appointment}/calendario', 'calendar')->whereNumber('appointment')->name('calendar');
     Route::patch('meus-horarios/{token}/{appointment}/cancelar', 'cancel')->whereNumber('appointment')->name('cancel');
 });
+
+// Fotos da página pública (logo, capa e galeria), guardadas no banco
+Route::get('fotos/{photo}', SalonPhotoController::class)->whereNumber('photo')->name('salon-photos.show');
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -53,6 +58,12 @@ Route::middleware('auth')->group(function () {
     Route::get('agenda/{appointment}/pagamento', [PaymentController::class, 'create'])->name('appointments.payment.create');
     Route::post('agenda/{appointment}/pagamento', [PaymentController::class, 'store'])->name('appointments.payment.store');
     Route::delete('agenda/{appointment}/pagamento', [PaymentController::class, 'destroy'])->name('appointments.payment.destroy');
+
+    // Minha página: cores, fotos, textos e contatos da página pública de agendamento
+    Route::get('minha-pagina', [BookingPageController::class, 'edit'])->name('booking-page.edit');
+    Route::patch('minha-pagina', [BookingPageController::class, 'update'])->name('booking-page.update');
+    Route::post('minha-pagina/fotos', [BookingPageController::class, 'storePhoto'])->name('booking-page.photos.store');
+    Route::delete('minha-pagina/fotos/{photo}', [BookingPageController::class, 'destroyPhoto'])->name('booking-page.photos.destroy');
 
     // Financeiro (todas as telas aceitam ?mes=2026-10). No plano Essencial, depois do teste, mostra o convite para mudar de plano.
     Route::prefix('financeiro')->name('finance.')->middleware(EnsureFinanceInPlan::class)->group(function () {
