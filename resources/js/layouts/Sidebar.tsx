@@ -11,7 +11,7 @@ export default function Sidebar() {
     const planActive = isActive('plan.*');
 
     return (
-        <aside className="m-4 hidden w-[236px] shrink-0 flex-col gap-7 rounded-menu bg-tinta px-4 py-6 text-creme shadow-menu lg:sticky lg:top-4 lg:flex lg:h-[calc(100vh-2rem)]">
+        <aside className="m-4 hidden w-[236px] shrink-0 flex-col gap-7 vidro-escuro rounded-menu px-4 py-6 text-creme lg:sticky lg:top-4 lg:flex lg:h-[calc(100vh-2rem)]">
             <Link href={route('dashboard')} className="min-w-0 px-2">
                 <Logo subtitle={salon.name} />
             </Link>
@@ -28,7 +28,7 @@ export default function Sidebar() {
                                 aria-current={active ? 'page' : undefined}
                                 className={cx(
                                     'flex min-h-11 items-center gap-3 rounded-full px-3 text-sm transition',
-                                    active ? 'bg-menu-ativo font-semibold text-white' : 'font-medium text-menu-texto hover:bg-menu-ativo/60 hover:text-white',
+                                    active ? 'vidro-ativo font-semibold text-white' : 'font-medium text-menu-texto hover:bg-white/10 hover:text-white',
                                 )}
                             >
                                 <Icon name={item.icon} className="h-[18px] w-[18px]" />

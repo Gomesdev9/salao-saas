@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes, ComponentProps } from 'react';
 import { cx } from '@/lib/format';
 import Icon from './Icon';
 
-const base = 'inline-flex h-11 items-center justify-center gap-2 rounded-campo text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2';
+const base = 'botao-vidro inline-flex h-11 items-center justify-center gap-2 rounded-campo text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2';
 
 /** Link com cara de botão. variant="secondary" é o botão claro com borda. */
 export function LinkButton({ variant = 'primary', icon, className, children, ...props }: ComponentProps<typeof Link> & { variant?: 'primary' | 'secondary'; icon?: string }) {

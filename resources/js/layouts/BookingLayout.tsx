@@ -5,7 +5,7 @@ import { cx } from '@/lib/format';
 
 export type BookingSalon = { name: string; city: string | null; whatsappUrl: string | null };
 
-const circle = 'flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition hover:bg-white/80';
+const circle = 'flex h-11 w-11 items-center justify-center botao-vidro rounded-full bg-white/45 transition hover:bg-white/80';
 
 /** Página pública de agendamento da cliente: pensada para o celular, centralizada no computador */
 export default function BookingLayout({
@@ -95,7 +95,7 @@ export function BarButton({ form, disabled, children }: { form: string; disabled
             type="submit"
             form={form}
             disabled={disabled}
-            className="inline-flex h-12 shrink-0 items-center gap-2 rounded-full bg-pele px-5 text-[15px] font-semibold text-tinta hover:bg-white disabled:opacity-60"
+            className="inline-flex h-12 shrink-0 items-center gap-2 botao-vidro rounded-full bg-pele px-5 text-[15px] font-semibold text-tinta hover:bg-white disabled:opacity-60"
         >
             {children}
         </button>
@@ -124,7 +124,7 @@ export function InfoItem({ icon, children }: { icon: string; children: ReactNode
 
 export function WhatsappButton({ href, children }: { href: string; children: ReactNode }) {
     return (
-        <a href={href} className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-cafe font-semibold text-white hover:bg-cafe-escuro">
+        <a href={href} className="inline-flex h-12 items-center justify-center gap-2 botao-vidro rounded-full bg-cafe font-semibold text-white hover:bg-cafe-escuro">
             <Icon name="whatsapp" className="h-5 w-5" />
             {children}
         </a>

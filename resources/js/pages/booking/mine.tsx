@@ -79,7 +79,7 @@ export default function Mine({ salon, firstName, next, upcoming, history, newUrl
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2.5">
-                        <Link href={next.rescheduleUrl} className="inline-flex h-12 items-center justify-center rounded-full bg-pele text-[15px] font-semibold text-tinta hover:bg-white">
+                        <Link href={next.rescheduleUrl} className="inline-flex h-12 items-center justify-center botao-vidro rounded-full bg-pele text-[15px] font-semibold text-tinta hover:bg-white">
                             Remarcar
                         </Link>
                         <button

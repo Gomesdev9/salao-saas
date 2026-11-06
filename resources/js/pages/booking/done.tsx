@@ -69,11 +69,11 @@ export default function Done({ salon, firstName, appointment, calendarUrl, mineU
 
             <div className="flex flex-col gap-2.5">
                 {/* Arquivo .ics: link comum para o celular baixar */}
-                <a href={calendarUrl} className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-cafe text-[15px] font-semibold text-white hover:bg-cafe-escuro">
+                <a href={calendarUrl} className="inline-flex h-12 items-center justify-center gap-2 botao-vidro rounded-full bg-cafe text-[15px] font-semibold text-white hover:bg-cafe-escuro">
                     <Icon name="agenda" className="h-[18px] w-[18px]" />
                     Adicionar ao calendário
                 </a>
-                <Link href={mineUrl} className="inline-flex h-12 items-center justify-center rounded-full border border-linha-forte bg-cartao text-[15px] font-semibold hover:bg-areia">
+                <Link href={mineUrl} className="botao-vidro inline-flex h-12 items-center justify-center rounded-full border border-linha-forte bg-cartao text-[15px] font-semibold hover:bg-areia">
                     Ver meus horários
                 </Link>
             </div>

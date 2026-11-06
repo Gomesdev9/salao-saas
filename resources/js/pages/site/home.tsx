@@ -92,7 +92,7 @@ export default function Home({ plans, trialDays, businessTypes, statuses, year }
 
             {/* Menu flutuante */}
             <header className="sticky top-0 z-30 px-3 pt-3 sm:px-6">
-                <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-2 rounded-full border border-linha bg-cartao/95 py-1.5 pl-4 pr-1.5 shadow-cartao backdrop-blur sm:pl-5">
+                <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-2 vidro rounded-full py-1.5 pl-4 pr-1.5 sm:pl-5">
                     <Link href={route('home')} className="min-w-0">
                         <Logo />
                     </Link>
@@ -105,7 +105,7 @@ export default function Home({ plans, trialDays, businessTypes, statuses, year }
                     </nav>
                     <div className="flex shrink-0 items-center gap-1">
                         {signedIn ? (
-                            <Link href={route('dashboard')} className="inline-flex h-11 items-center gap-2 rounded-full bg-cafe px-5 text-sm font-semibold text-white transition hover:bg-cafe-escuro">
+                            <Link href={route('dashboard')} className="inline-flex h-11 items-center gap-2 botao-vidro rounded-full bg-cafe px-5 text-sm font-semibold text-white transition hover:bg-cafe-escuro">
                                 Ir para o painel
                             </Link>
                         ) : (
@@ -113,7 +113,7 @@ export default function Home({ plans, trialDays, businessTypes, statuses, year }
                                 <Link href={route('login')} className="inline-flex h-11 items-center rounded-full px-3 text-sm font-semibold transition hover:bg-areia sm:px-4">
                                     Entrar
                                 </Link>
-                                <Link href={route('register')} className="inline-flex h-11 items-center rounded-full bg-cafe px-4 text-sm font-semibold text-white transition hover:bg-cafe-escuro sm:px-5">
+                                <Link href={route('register')} className="inline-flex h-11 items-center botao-vidro rounded-full bg-cafe px-4 text-sm font-semibold text-white transition hover:bg-cafe-escuro sm:px-5">
                                     Cadastrar<span className="hidden sm:inline">&nbsp;empresa</span>
                                 </Link>
                             </>
@@ -137,7 +137,7 @@ export default function Home({ plans, trialDays, businessTypes, statuses, year }
                             {signedIn ? (
                                 <Link
                                     href={route('dashboard')}
-                                    className="inline-flex h-14 items-center gap-2 rounded-full bg-cafe px-7 text-base font-semibold text-white shadow-[0_14px_28px_-14px_rgba(146,88,55,0.8)] transition hover:bg-cafe-escuro"
+                                    className="inline-flex h-14 items-center gap-2 botao-vidro rounded-full bg-cafe px-7 text-base font-semibold text-white transition hover:bg-cafe-escuro"
                                 >
                                     Ir para o painel
                                     <Arrow />
@@ -146,12 +146,12 @@ export default function Home({ plans, trialDays, businessTypes, statuses, year }
                                 <>
                                     <Link
                                         href={route('register')}
-                                        className="inline-flex h-14 items-center gap-2 rounded-full bg-cafe px-7 text-base font-semibold text-white shadow-[0_14px_28px_-14px_rgba(146,88,55,0.8)] transition hover:bg-cafe-escuro"
+                                        className="inline-flex h-14 items-center gap-2 botao-vidro rounded-full bg-cafe px-7 text-base font-semibold text-white transition hover:bg-cafe-escuro"
                                     >
                                         Cadastrar minha empresa
                                         <Arrow />
                                     </Link>
-                                    <Link href={route('login')} className="inline-flex h-14 items-center rounded-full border border-linha-forte bg-cartao px-7 text-base font-semibold transition hover:bg-areia">
+                                    <Link href={route('login')} className="botao-vidro inline-flex h-14 items-center rounded-full border border-linha-forte bg-cartao px-7 text-base font-semibold transition hover:bg-areia">
                                         Já tenho conta
                                     </Link>
                                 </>
@@ -267,7 +267,7 @@ export default function Home({ plans, trialDays, businessTypes, statuses, year }
                             ))}
                         </ol>
                         {!signedIn && (
-                            <Link href={route('register')} className="inline-flex h-14 items-center gap-2 self-start rounded-full bg-pele px-7 text-base font-semibold text-tinta transition hover:bg-white">
+                            <Link href={route('register')} className="inline-flex h-14 items-center gap-2 botao-vidro self-start rounded-full bg-pele px-7 text-base font-semibold text-tinta transition hover:bg-white">
                                 Começar o cadastro
                                 <Arrow />
                             </Link>
@@ -301,7 +301,7 @@ export default function Home({ plans, trialDays, businessTypes, statuses, year }
                     <div className="grid gap-6 pt-3 lg:grid-cols-3">
                         {plans.map((plan) => {
                             const button = cx(
-                                'inline-flex h-12 w-full items-center justify-center rounded-full text-[15px] font-semibold transition',
+                                'botao-vidro inline-flex h-12 w-full items-center justify-center rounded-full text-[15px] font-semibold transition',
                                 plan.highlighted ? 'bg-pele text-tinta hover:bg-white' : 'bg-cafe text-white hover:bg-cafe-escuro',
                             );
 
@@ -353,7 +353,7 @@ export default function Home({ plans, trialDays, businessTypes, statuses, year }
                         </div>
                         <Link
                             href={signedIn ? route('dashboard') : route('register')}
-                            className="inline-flex h-14 shrink-0 items-center gap-2 rounded-full bg-tinta px-7 text-base font-semibold text-creme transition hover:bg-menu-ativo"
+                            className="inline-flex h-14 shrink-0 items-center gap-2 botao-vidro rounded-full bg-tinta px-7 text-base font-semibold text-creme transition hover:bg-menu-ativo"
                         >
                             {signedIn ? 'Ir para o painel' : 'Cadastrar minha empresa'}
                             <Arrow />
