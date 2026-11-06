@@ -35,7 +35,7 @@ export default function BottomNav() {
     return (
         <div ref={box} className="fixed inset-x-3.5 bottom-3.5 z-40 lg:hidden">
             {open && (
-                <div id="menu-mais" className="mb-2 flex flex-col gap-1 rounded-[26px] bg-tinta p-2 text-creme shadow-menu">
+                <div id="menu-mais" className="mb-2 flex flex-col gap-1 vidro-escuro rounded-[26px] p-2 text-creme">
                     {more.map((item) => {
                         const active = isActive(item.active);
 
@@ -45,14 +45,14 @@ export default function BottomNav() {
                                 href={route(item.route)}
                                 onClick={() => setOpen(false)}
                                 aria-current={active ? 'page' : undefined}
-                                className={cx('flex min-h-12 items-center gap-3 rounded-full px-4 text-sm', active ? 'bg-menu-ativo font-semibold text-white' : 'font-medium text-menu-texto')}
+                                className={cx('flex min-h-12 items-center gap-3 rounded-full px-4 text-sm', active ? 'vidro-ativo font-semibold text-white' : 'font-medium text-menu-texto')}
                             >
                                 <Icon name={item.icon} className="h-[18px] w-[18px]" />
                                 {item.label}
                             </Link>
                         );
                     })}
-                    <div className="flex items-center gap-2.5 border-t border-menu-ativo px-2 pt-2">
+                    <div className="flex items-center gap-2.5 border-t border-white/10 px-2 pt-2">
                         <Avatar name={user.name} size="h-8 w-8 text-xs" className="!bg-menu-ativo !text-creme" />
                         <Link href={route('profile.edit')} onClick={() => setOpen(false)} className="flex min-h-11 min-w-0 flex-1 items-center truncate text-[13px] text-menu-texto">
                             {user.name}
@@ -62,7 +62,7 @@ export default function BottomNav() {
                 </div>
             )}
 
-            <nav aria-label="Menu principal" className="grid h-[68px] grid-cols-4 rounded-full bg-tinta shadow-menu">
+            <nav aria-label="Menu principal" className="vidro-escuro grid h-[68px] grid-cols-4 rounded-full">
                 {mainItems.slice(0, 3).map((item) => {
                     const active = isActive(item.active);
 
@@ -73,7 +73,7 @@ export default function BottomNav() {
                             aria-current={active ? 'page' : undefined}
                             className={cx(
                                 'flex flex-col items-center justify-center gap-1 rounded-full text-[11px]',
-                                active ? 'm-1.5 bg-menu-ativo font-bold text-white' : 'font-semibold text-menu-texto',
+                                active ? 'vidro-ativo m-1.5 font-bold text-white' : 'font-semibold text-menu-texto',
                             )}
                         >
                             <Icon name={item.icon} className="h-[22px] w-[22px]" />
@@ -88,7 +88,7 @@ export default function BottomNav() {
                     aria-controls="menu-mais"
                     className={cx(
                         'flex flex-col items-center justify-center gap-1 rounded-full text-[11px]',
-                        moreActive ? 'm-1.5 bg-menu-ativo font-bold text-white' : 'font-semibold text-menu-texto',
+                        moreActive ? 'vidro-ativo m-1.5 font-bold text-white' : 'font-semibold text-menu-texto',
                     )}
                 >
                     <Icon name="menu" className="h-[22px] w-[22px]" />

@@ -170,7 +170,7 @@ function CommissionRow({ row, month }: { row: Row; month: string }) {
                     <button
                         type="button"
                         onClick={() => router.post(route('finance.commissions.pay', professional.id), { mes: month }, options)}
-                        className="min-h-10 rounded-campo bg-cafe px-3.5 text-[13px] font-semibold text-white hover:bg-cafe-escuro"
+                        className="min-h-10 botao-vidro rounded-campo bg-cafe px-3.5 text-[13px] font-semibold text-white hover:bg-cafe-escuro"
                     >
                         {row.paid > 0 ? `Pagar o restante (${money(row.remaining)})` : 'Marcar como pago'}
                     </button>

@@ -65,7 +65,7 @@ export default function Time(props: Props) {
                     <span className="truncate text-base font-bold">{service.name}</span>
                     <span className="text-[13px] text-suave">{service.details}</span>
                 </div>
-                <Link href={props.changeUrl} className="inline-flex h-10 shrink-0 items-center rounded-full bg-cartao px-4 text-sm font-semibold text-cafe-escuro shadow-cartao">
+                <Link href={props.changeUrl} className="botao-vidro inline-flex h-10 shrink-0 items-center rounded-full bg-cartao px-4 text-sm font-semibold text-cafe-escuro">
                     Trocar
                 </Link>
             </div>

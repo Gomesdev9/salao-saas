@@ -68,7 +68,7 @@ export default function PlanEdit({ current, trial, plans, activeProfessionals, e
                         {item.value === current ? (
                             <span
                                 className={cx(
-                                    'inline-flex h-12 w-full items-center justify-center rounded-full border text-[15px] font-semibold',
+                                    'botao-vidro inline-flex h-12 w-full items-center justify-center rounded-full border text-[15px] font-semibold',
                                     item.highlighted ? 'border-menu-ativo text-menu-texto' : 'border-linha text-suave',
                                 )}
                             >
@@ -79,7 +79,7 @@ export default function PlanEdit({ current, trial, plans, activeProfessionals, e
                                 type="button"
                                 onClick={() => router.patch(route('plan.update'), { plan: item.value }, { preserveScroll: true })}
                                 className={cx(
-                                    'inline-flex h-12 w-full items-center justify-center rounded-full text-[15px] font-semibold transition',
+                                    'botao-vidro inline-flex h-12 w-full items-center justify-center rounded-full text-[15px] font-semibold transition',
                                     item.highlighted ? 'bg-pele text-tinta hover:bg-white' : 'bg-cafe text-white hover:bg-cafe-escuro',
                                 )}
                             >

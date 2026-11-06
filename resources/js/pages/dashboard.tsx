@@ -180,10 +180,10 @@ function BookingLink({ available, url, trialOnly, plan }: Props['booking']) {
                     <p className="text-sm text-menu-texto">Mande este link para as clientes marcarem sozinhas. Os horários caem direto na agenda como “Agendado”.</p>
                     <span className="truncate rounded-campo bg-menu-ativo px-3 py-2.5 text-[13px] text-menu-texto">{url}</span>
                     <div className="grid grid-cols-2 gap-2">
-                        <button type="button" onClick={copy} className="inline-flex h-11 items-center justify-center rounded-full bg-pele text-sm font-semibold text-tinta hover:bg-white">
+                        <button type="button" onClick={copy} className="inline-flex h-11 items-center justify-center botao-vidro rounded-full bg-pele text-sm font-semibold text-tinta hover:bg-white">
                             {copied ? 'Copiado!' : 'Copiar link'}
                         </button>
-                        <a href={url} target="_blank" rel="noopener" className="inline-flex h-11 items-center justify-center rounded-full border border-menu-suave text-sm font-semibold hover:bg-menu-ativo">
+                        <a href={url} target="_blank" rel="noopener" className="botao-vidro inline-flex h-11 items-center justify-center rounded-full border border-menu-suave text-sm font-semibold hover:bg-menu-ativo">
                             Abrir
                         </a>
                     </div>
@@ -192,7 +192,7 @@ function BookingLink({ available, url, trialOnly, plan }: Props['booking']) {
             ) : (
                 <>
                     <p className="text-sm text-menu-texto">Deixe as clientes marcarem sozinhas por um link da sua empresa. Faz parte dos planos Profissional e Premium.</p>
-                    <Link href={route('plan.edit')} className="inline-flex h-11 items-center justify-center rounded-full bg-pele text-sm font-semibold text-tinta hover:bg-white">
+                    <Link href={route('plan.edit')} className="inline-flex h-11 items-center justify-center botao-vidro rounded-full bg-pele text-sm font-semibold text-tinta hover:bg-white">
                         Ver planos
                     </Link>
                 </>

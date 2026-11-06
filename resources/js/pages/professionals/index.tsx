@@ -78,10 +78,10 @@ export default function ProfessionalsIndex({ professionals, showInactive, active
                                 )}
                             </div>
                             <div className="mt-auto flex gap-2 border-t border-linha-clara pt-3">
-                                <Link href={route('professionals.edit', professional.id)} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-campo border border-linha text-sm font-semibold hover:bg-areia">
+                                <Link href={route('professionals.edit', professional.id)} className="botao-vidro inline-flex min-h-11 flex-1 items-center justify-center rounded-campo border border-linha text-sm font-semibold hover:bg-areia">
                                     Editar
                                 </Link>
-                                <Link href={route('appointments.index')} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-campo border border-linha text-sm font-semibold hover:bg-areia">
+                                <Link href={route('appointments.index')} className="botao-vidro inline-flex min-h-11 flex-1 items-center justify-center rounded-campo border border-linha text-sm font-semibold hover:bg-areia">
                                     Ver agenda
                                 </Link>
                             </div>

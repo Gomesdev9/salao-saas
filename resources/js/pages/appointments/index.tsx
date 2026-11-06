@@ -202,7 +202,7 @@ function PhoneAgenda({ day, week, appointments, filterId, professionals, now }: 
 
             <Link
                 href={route('appointments.create', withFilter({ data: day.date }))}
-                className="fixed bottom-[98px] right-4 z-30 flex h-14 w-14 items-center justify-center rounded-[22px] bg-cafe text-white shadow-[0_6px_16px_rgba(28,13,6,0.25)] hover:bg-cafe-escuro"
+                className="fixed bottom-[98px] right-4 z-30 flex h-14 w-14 items-center justify-center botao-vidro rounded-[22px] bg-cafe text-white hover:bg-cafe-escuro"
             >
                 <span className="sr-only">Novo agendamento</span>
                 <Icon name="mais" className="h-6 w-6" />

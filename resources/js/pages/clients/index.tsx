@@ -125,7 +125,7 @@ export default function ClientsIndex({ clients, search, total }: Props) {
                             {(clients.prevUrl || clients.nextUrl) && (
                                 <div className="flex gap-1.5">
                                     {clients.prevUrl && (
-                                        <Link href={clients.prevUrl} className="inline-flex h-11 items-center rounded-campo border border-linha px-3.5 font-semibold text-tinta hover:bg-areia">
+                                        <Link href={clients.prevUrl} className="botao-vidro inline-flex h-11 items-center rounded-campo border border-linha px-3.5 font-semibold text-tinta hover:bg-areia">
                                             Anterior
                                         </Link>
                                     )}
@@ -133,7 +133,7 @@ export default function ClientsIndex({ clients, search, total }: Props) {
                                         {clients.currentPage}
                                     </span>
                                     {clients.nextUrl && (
-                                        <Link href={clients.nextUrl} className="inline-flex h-11 items-center rounded-campo border border-linha px-3.5 font-semibold text-tinta hover:bg-areia">
+                                        <Link href={clients.nextUrl} className="botao-vidro inline-flex h-11 items-center rounded-campo border border-linha px-3.5 font-semibold text-tinta hover:bg-areia">
                                             Próxima
                                         </Link>
                                     )}

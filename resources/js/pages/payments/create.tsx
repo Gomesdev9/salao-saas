@@ -183,7 +183,7 @@ export default function PaymentCreate({ appointment, commission, methods, discou
                     <button
                         type="submit"
                         disabled={form.processing}
-                        className="flex h-12 items-center justify-center gap-2 rounded-campo bg-cafe text-[15px] font-bold text-white hover:bg-cafe-escuro focus:outline-none focus:ring-2 focus:ring-caramelo focus:ring-offset-2 disabled:opacity-50"
+                        className="flex h-12 items-center justify-center gap-2 botao-vidro rounded-campo bg-cafe text-[15px] font-bold text-white hover:bg-cafe-escuro focus:outline-none focus:ring-2 focus:ring-caramelo focus:ring-offset-2 disabled:opacity-50"
                     >
                         <Icon name="check" className="h-[18px] w-[18px]" />
                         Confirmar pagamento
