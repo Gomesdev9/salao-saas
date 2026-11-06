@@ -95,8 +95,8 @@ class FinanceController extends Controller
         $outgoing = (float) (clone $expenses)->sum('amount');
 
         if ($search !== '') {
-            $payments->where('description', 'like', "%{$search}%");
-            $expenses->where(fn ($query) => $query->where('description', 'like', "%{$search}%")->orWhere('category', 'like', "%{$search}%"));
+            $payments->whereLike('description', "%{$search}%");
+            $expenses->where(fn ($query) => $query->whereLike('description', "%{$search}%")->orWhereLike('category', "%{$search}%"));
         }
 
         $rows = collect()
