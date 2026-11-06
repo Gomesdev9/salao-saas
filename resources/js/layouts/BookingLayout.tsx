@@ -5,7 +5,7 @@ import { cx } from '@/lib/format';
 
 export type BookingSalon = { name: string; city: string | null; whatsappUrl: string | null };
 
-const circle = 'flex h-11 w-11 items-center justify-center rounded-full border border-linha bg-cartao shadow-cartao hover:bg-areia';
+const circle = 'flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition hover:bg-white/80';
 
 /** Página pública de agendamento da cliente: pensada para o celular, centralizada no computador */
 export default function BookingLayout({
@@ -33,7 +33,8 @@ export default function BookingLayout({
         <>
             <Head title={`${title} · ${salon.name}`} />
             <div className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col gap-5 px-4 pb-36 pt-4">
-                <header className="grid grid-cols-[44px_1fr_44px] items-center gap-2">
+                {/* Navegação com efeito de vidro: fica presa no topo e desfoca a página que passa por trás */}
+                <header className="vidro sticky top-3 z-30 grid grid-cols-[44px_1fr_44px] items-center gap-2 rounded-full p-1.5">
                     {back ? (
                         <Link href={back} className={circle}>
                             <span className="sr-only">Voltar</span>
@@ -80,7 +81,7 @@ export default function BookingLayout({
             {bar && (
                 // Barra fixa no rodapé com o resumo e o botão de seguir
                 <div className="fixed inset-x-0 bottom-0 z-30 px-4 pb-4">
-                    <div className="mx-auto flex max-w-[448px] items-center justify-between gap-3 rounded-full bg-tinta py-2.5 pl-6 pr-2.5 text-creme shadow-menu">{bar}</div>
+                    <div className="mx-auto flex max-w-[448px] items-center justify-between gap-3 vidro-escuro rounded-full py-2.5 pl-6 pr-2.5 text-creme">{bar}</div>
                 </div>
             )}
         </>
